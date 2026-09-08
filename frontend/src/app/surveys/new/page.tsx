@@ -31,11 +31,11 @@ export default function NewSurveyPage() {
   async function save(publish: boolean) {
     if (!token) return;
     if (!title.trim()) {
-      setError("Title is required");
+      setError("Cinwaanku waa waajib");
       return;
     }
     if (questions.some((q) => !q.prompt.trim())) {
-      setError("Every question needs a prompt");
+      setError("Su'aal kasta waxay u baahan tahay qoraal");
       return;
     }
     setBusy(true);
@@ -52,20 +52,20 @@ export default function NewSurveyPage() {
       }
       router.push(`/surveys/${survey.id}/edit`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not save survey");
+      setError(err instanceof Error ? err.message : "Sahanka lama kaydin karin");
     } finally {
       setBusy(false);
     }
   }
 
   if (loading || !token) {
-    return <p style={{ color: "var(--muted)" }}>Loading…</p>;
+    return <p style={{ color: "var(--muted)" }}>Waa la soo rarayaa…</p>;
   }
 
   return (
     <div style={{ display: "grid", gap: "1.25rem" }}>
       <h1 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: "2rem" }}>
-        New survey
+        Sahan cusub
       </h1>
       <SurveyEditor
         title={title}
@@ -82,10 +82,10 @@ export default function NewSurveyPage() {
       {error && <p style={{ color: "var(--danger)" }}>{error}</p>}
       <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
         <button type="button" disabled={busy} onClick={() => save(false)} style={secondary}>
-          Save draft
+          Kaydi qabyo
         </button>
         <button type="button" disabled={busy} onClick={() => save(true)} style={primary}>
-          Save & publish
+          Kaydi oo daabac
         </button>
       </div>
     </div>

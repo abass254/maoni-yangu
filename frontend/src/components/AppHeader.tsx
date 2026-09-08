@@ -38,16 +38,18 @@ export function AppHeader() {
         >
           Maoni Yangu
         </span>
-        <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>maoni yako, mahali pako</span>
+        <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+          fikradaada, goobtaada
+        </span>
       </Link>
       <nav style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
         {user ? (
           <>
             <Link href="/dashboard" className="nav-link">
-              Dashboard
+              Xarunta
             </Link>
             <Link href="/surveys/new" className="nav-link">
-              New survey
+              Sahan cusub
             </Link>
             <span style={{ color: "var(--muted)", fontSize: "0.9rem" }}>{user.name}</span>
             <button
@@ -62,12 +64,12 @@ export function AppHeader() {
                 cursor: "pointer",
               }}
             >
-              Log out
+              Ka bax
             </button>
           </>
         ) : (
           <>
-            <Link href="/login">Log in</Link>
+            <Link href="/login">Gal</Link>
             <Link
               href="/register"
               style={{
@@ -78,7 +80,7 @@ export function AppHeader() {
                 fontWeight: 600,
               }}
             >
-              Get started
+              Bilow
             </Link>
           </>
         )}

@@ -23,16 +23,19 @@ export default function RegisterPage() {
       await register(name, email, password);
       router.push("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Registration failed");
+      setError(err instanceof Error ? err.message : "Diiwaangelintu way fashilantay");
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <AuthCard title="Create account" subtitle="Start designing location-aware surveys.">
+    <AuthCard
+      title="Samee akoon"
+      subtitle="Bilow sameynta sahanno goobtu ka muuqato."
+    >
       <form onSubmit={onSubmit} style={{ display: "grid", gap: "0.9rem" }}>
-        <Field label="Name">
+        <Field label="Magaca">
           <input
             required
             value={name}
@@ -40,7 +43,7 @@ export default function RegisterPage() {
             style={inputStyle}
           />
         </Field>
-        <Field label="Email">
+        <Field label="Iimayl">
           <input
             type="email"
             required
@@ -49,7 +52,7 @@ export default function RegisterPage() {
             style={inputStyle}
           />
         </Field>
-        <Field label="Password">
+        <Field label="Furaha sirta">
           <input
             type="password"
             required
@@ -61,11 +64,11 @@ export default function RegisterPage() {
         </Field>
         {error && <p style={{ color: "var(--danger)", margin: 0 }}>{error}</p>}
         <button type="submit" disabled={busy} style={primaryBtn}>
-          {busy ? "Creating…" : "Create account"}
+          {busy ? "Waa la sameynayaa…" : "Samee akoon"}
         </button>
       </form>
       <p style={{ color: "var(--muted)", marginTop: "1rem" }}>
-        Already have an account? <Link href="/login">Log in</Link>
+        Horay ma u leedahay akoon? <Link href="/login">Gal</Link>
       </p>
     </AuthCard>
   );

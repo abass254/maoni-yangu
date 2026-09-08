@@ -3,13 +3,17 @@
 import Link from "next/link";
 import { useEffect, useState, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
-import { api, type SurveyListItem } from "@/lib/api";
+import { api, type SurveyListItem, type SurveyStatus } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
 const DEFAULT_TEMPLATE_TITLES = new Set([
   "Job Application",
   "Kenya Elections Opinion Survey",
 ]);
+
+function statusLabel(status: SurveyStatus) {
+  return status === "published" ? "la daabacay" : "qabyo";
+}
 
 export default function DashboardPage() {
   const { token, loading } = useAuth();
@@ -28,7 +32,9 @@ export default function DashboardPage() {
     api
       .listSurveys(token)
       .then(setSurveys)
-      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load"))
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : "Waa lagu fashilmay soo raridda")
+      )
       .finally(() => setBusy(false));
   }, [token, loading, router]);
 
@@ -62,14 +68,16 @@ export default function DashboardPage() {
       });
       router.push(`/surveys/${survey.id}/edit`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not add elections template");
+      setError(
+        err instanceof Error ? err.message : "Waa lagu fashilmay ku darista qaabka doorashada"
+      );
     } finally {
       setAddingElections(false);
     }
   }
 
   if (loading || busy) {
-    return <p style={{ color: "var(--muted)" }}>Loading surveys…</p>;
+    return <p style={{ color: "var(--muted)" }}>Sahannada waa la soo rarayaa…</p>;
   }
 
   return (
@@ -77,10 +85,11 @@ export default function DashboardPage() {
       <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
         <div>
           <h1 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: "2rem" }}>
-            Your surveys
+            Sahannadaada
           </h1>
           <p style={{ margin: "0.35rem 0 0", color: "var(--muted)" }}>
-            New accounts get Job Application and Kenya Elections drafts — edit, publish, and share.
+            Akoonnada cusub waxay helayaan qabyo Job Application iyo Kenya Elections —
+            wax ka beddel, daabac, oo wadaag.
           </p>
         </div>
         <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignSelf: "start" }}>
@@ -91,11 +100,11 @@ export default function DashboardPage() {
               disabled={addingElections}
               style={secondaryBtn}
             >
-              {addingElections ? "Adding…" : "Add Kenya Elections template"}
+              {addingElections ? "Waa lagu darayaa…" : "Ku dar qaabka Kenya Elections"}
             </button>
           )}
           <Link href="/surveys/new" style={primaryLink}>
-            New survey
+            Sahan cusub
           </Link>
         </div>
       </div>
@@ -111,7 +120,7 @@ export default function DashboardPage() {
             color: "var(--muted)",
           }}
         >
-          No surveys yet. Create one to get a shareable response link.
+          Weli ma jiraan sahanno. Samee mid si aad u hesho xiriiriye la wadaagi karo.
         </div>
       ) : (
         <div style={{ display: "grid", gap: "0.85rem" }}>
@@ -131,23 +140,23 @@ export default function DashboardPage() {
                 <div>
                   <h2 style={{ margin: 0, fontSize: "1.2rem" }}>{s.title}</h2>
                   <p style={{ margin: "0.3rem 0 0", color: "var(--muted)", fontSize: "0.92rem" }}>
-                    {DEFAULT_TEMPLATE_TITLES.has(s.title) ? "Default template · " : ""}
-                    {s.question_count} questions · {s.response_count} responses ·{" "}
+                    {DEFAULT_TEMPLATE_TITLES.has(s.title) ? "Qaabka caadiga ah · " : ""}
+                    {s.question_count} su&apos;aalo · {s.response_count} jawaabo ·{" "}
                     <span style={{ color: s.status === "published" ? "var(--accent)" : "var(--warn)" }}>
-                      {s.status}
+                      {statusLabel(s.status)}
                     </span>
                   </p>
                 </div>
                 <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                   <Link href={`/surveys/${s.id}/edit`} style={chip}>
-                    Edit
+                    Wax ka beddel
                   </Link>
                   <Link href={`/surveys/${s.id}/results`} style={chip}>
-                    Results
+                    Natiijooyinka
                   </Link>
                   {s.status === "published" && (
                     <Link href={`/s/${s.public_id}`} style={chip} target="_blank">
-                      Open link
+                      Fur xiriiriyaha
                     </Link>
                   )}
                 </div>

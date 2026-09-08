@@ -44,7 +44,9 @@ export default function EditSurveyPage() {
           }))
         );
       })
-      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load"));
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : "Waa lagu fashilmay soo raridda")
+      );
   }, [token, loading, router, surveyId]);
 
   async function save(extra?: { status?: "draft" | "published" }) {
@@ -61,9 +63,9 @@ export default function EditSurveyPage() {
         ...extra,
       });
       setSurvey(updated);
-      setMessage(extra?.status === "published" ? "Published." : "Saved.");
+      setMessage(extra?.status === "published" ? "Waa la daabacay." : "Waa la kaydiyay.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Save failed");
+      setError(err instanceof Error ? err.message : "Kaydintu way fashilantay");
     } finally {
       setBusy(false);
     }
@@ -71,13 +73,13 @@ export default function EditSurveyPage() {
 
   async function remove() {
     if (!token || !survey) return;
-    if (!confirm("Delete this survey and all responses?")) return;
+    if (!confirm("Ma tirtiraysaa sahankan iyo dhammaan jawaabaha?")) return;
     await api.deleteSurvey(token, survey.id);
     router.push("/dashboard");
   }
 
   if (!survey && !error) {
-    return <p style={{ color: "var(--muted)" }}>Loading survey…</p>;
+    return <p style={{ color: "var(--muted)" }}>Sahanka waa la soo rarayaa…</p>;
   }
 
   if (error && !survey) {
@@ -91,27 +93,29 @@ export default function EditSurveyPage() {
       ? `${window.location.origin}/s/${survey.public_id}`
       : `/s/${survey.public_id}`;
 
+  const statusLabel = survey.status === "published" ? "la daabacay" : "qabyo";
+
   return (
     <div style={{ display: "grid", gap: "1.25rem" }}>
       <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
         <div>
           <h1 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: "2rem" }}>
-            Edit survey
+            Wax ka beddel sahanka
           </h1>
           <p style={{ margin: "0.35rem 0 0", color: "var(--muted)" }}>
-            Status:{" "}
+            Xaaladda:{" "}
             <span style={{ color: survey.status === "published" ? "var(--accent)" : "var(--warn)" }}>
-              {survey.status}
+              {statusLabel}
             </span>
           </p>
         </div>
         <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
           <Link href={`/surveys/${survey.id}/results`} style={chip}>
-            Results
+            Natiijooyinka
           </Link>
           {survey.status === "published" && (
             <Link href={`/s/${survey.public_id}`} style={chip} target="_blank">
-              Preview
+              Horudhac
             </Link>
           )}
         </div>
@@ -128,14 +132,14 @@ export default function EditSurveyPage() {
             gap: "0.4rem",
           }}
         >
-          <strong>Share link</strong>
+          <strong>Xiriiriyaha wadaagista</strong>
           <code style={{ wordBreak: "break-all", color: "var(--accent)" }}>{shareUrl}</code>
           <button
             type="button"
             onClick={() => navigator.clipboard.writeText(shareUrl)}
             style={chipBtn}
           >
-            Copy link
+            Koobi garee xiriiriyaha
           </button>
         </div>
       )}
@@ -158,7 +162,7 @@ export default function EditSurveyPage() {
 
       <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
         <button type="button" disabled={busy} onClick={() => save()} style={secondary}>
-          Save changes
+          Kaydi isbeddelada
         </button>
         {survey.status !== "published" ? (
           <button
@@ -167,7 +171,7 @@ export default function EditSurveyPage() {
             onClick={() => save({ status: "published" })}
             style={primary}
           >
-            Publish
+            Daabac
           </button>
         ) : (
           <button
@@ -176,11 +180,11 @@ export default function EditSurveyPage() {
             onClick={() => save({ status: "draft" })}
             style={secondary}
           >
-            Unpublish
+            Ka noqo daabacaadda
           </button>
         )}
         <button type="button" onClick={remove} style={{ ...secondary, color: "var(--danger)" }}>
-          Delete
+          Tirtir
         </button>
       </div>
     </div>

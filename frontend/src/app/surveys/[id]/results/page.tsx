@@ -4,8 +4,23 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ResponseMap } from "@/components/ResponseMap";
-import { api, TOKEN_KEY, type SurveyResults } from "@/lib/api";
+import { api, TOKEN_KEY, type LocationStatus, type SurveyResults } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+
+function locationStatusLabel(status: LocationStatus) {
+  switch (status) {
+    case "granted":
+      return "la oggolaaday";
+    case "denied":
+      return "la diiday";
+    case "skipped":
+      return "la dhaafay";
+    case "unavailable":
+      return "lama heli karo";
+    default:
+      return status;
+  }
+}
 
 export default function ResultsPage() {
   const params = useParams();
@@ -28,7 +43,9 @@ export default function ResultsPage() {
         setResults(data);
         if (data.responses.length) setSelectedId(data.responses[0].id);
       })
-      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load results"));
+      .catch((err) =>
+        setError(err instanceof Error ? err.message : "Natiijooyinka lama soo rarayn")
+      );
   }, [token, loading, router, surveyId]);
 
   const mapPoints = useMemo(() => {
@@ -49,7 +66,7 @@ export default function ResultsPage() {
       headers: { Authorization: `Bearer ${token || localStorage.getItem(TOKEN_KEY)}` },
     });
     if (!res.ok) {
-      setError("CSV export failed");
+      setError("Soo dejinta CSV way fashilantay");
       return;
     }
     const blob = await res.blob();
@@ -62,7 +79,7 @@ export default function ResultsPage() {
   }
 
   if (!results && !error) {
-    return <p style={{ color: "var(--muted)" }}>Loading results…</p>;
+    return <p style={{ color: "var(--muted)" }}>Natiijooyinka waa la soo rarayaa…</p>;
   }
 
   if (error && !results) {
@@ -82,22 +99,22 @@ export default function ResultsPage() {
             {results.survey.title}
           </h1>
           <p style={{ margin: "0.35rem 0 0", color: "var(--muted)" }}>
-            {results.total} responses · {withLocation} with location
+            {results.total} jawaabo · {withLocation} leh goob
           </p>
         </div>
         <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
           <Link href={`/surveys/${surveyId}/edit`} style={chip}>
-            Edit
+            Wax ka beddel
           </Link>
           <button type="button" onClick={downloadCsv} style={chipBtn}>
-            Export CSV
+            Soo deji CSV
           </button>
         </div>
       </div>
 
       <section style={{ display: "grid", gap: "0.75rem" }}>
         <h2 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: "1.25rem" }}>
-          Response map
+          Khariidadda jawaabaha
         </h2>
         <ResponseMap points={mapPoints} />
       </section>
@@ -105,10 +122,10 @@ export default function ResultsPage() {
       <section className="results-split">
         <div style={{ display: "grid", gap: "0.5rem", alignContent: "start" }}>
           <h2 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: "1.25rem" }}>
-            Responses
+            Jawaabaha
           </h2>
           {results.responses.length === 0 && (
-            <p style={{ color: "var(--muted)" }}>No responses yet.</p>
+            <p style={{ color: "var(--muted)" }}>Weli majiraan jawaabo.</p>
           )}
           {results.responses.map((r) => (
             <button
@@ -125,12 +142,12 @@ export default function ResultsPage() {
                 cursor: "pointer",
               }}
             >
-              <div style={{ fontWeight: 600 }}>Response #{r.id}</div>
+              <div style={{ fontWeight: 600 }}>Jawaab #{r.id}</div>
               <div style={{ color: "var(--muted)", fontSize: "0.85rem", marginTop: 2 }}>
                 {new Date(r.submitted_at).toLocaleString()}
               </div>
               <div style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
-                Location: {r.location_status}
+                Goobta: {locationStatusLabel(r.location_status)}
                 {r.latitude != null && r.longitude != null
                   ? ` (${r.latitude.toFixed(4)}, ${r.longitude.toFixed(4)})`
                   : ""}
@@ -149,12 +166,12 @@ export default function ResultsPage() {
           }}
         >
           {!selected ? (
-            <p style={{ color: "var(--muted)" }}>Select a response to inspect answers.</p>
+            <p style={{ color: "var(--muted)" }}>Dooro jawaab si aad u eegto faahfaahinta.</p>
           ) : (
             <div style={{ display: "grid", gap: "0.85rem" }}>
-              <h3 style={{ margin: 0 }}>Response #{selected.id}</h3>
+              <h3 style={{ margin: 0 }}>Jawaab #{selected.id}</h3>
               <p style={{ margin: 0, color: "var(--muted)", fontSize: "0.92rem" }}>
-                Submitted {new Date(selected.submitted_at).toLocaleString()}
+                La gudbiyay {new Date(selected.submitted_at).toLocaleString()}
                 {selected.latitude != null && selected.longitude != null && (
                   <>
                     {" "}
@@ -173,8 +190,7 @@ export default function ResultsPage() {
           )}
         </div>
       </section>
-
-      </div>
+    </div>
   );
 }
 

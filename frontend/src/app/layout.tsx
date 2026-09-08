@@ -16,8 +16,9 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Maoni Yangu — surveys with location",
-  description: "Design surveys, collect answers, and capture where responses come from.",
+  title: "Maoni Yangu — sahanno leh goobta",
+  description:
+    "Samee sahanno, ururi jawaabo, oo qor meesha jawaabaha ka yimaadeen.",
 };
 
 export default function RootLayout({
@@ -26,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="so">
       <body
         className={`${dmSans.variable} ${fraunces.variable} antialiased`}
         style={

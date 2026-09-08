@@ -86,7 +86,7 @@ export function ResponseMap({ points, height = 360 }: Props) {
           background: "rgba(0,0,0,0.15)",
         }}
       >
-        No location pins yet — respondents must allow GPS when submitting.
+        Weli majiraan calaamado goob — jawaab-bixiyayaashu waa inay oggolaadaan GPS marka ay gudbinayaan.
       </div>
     );
   }

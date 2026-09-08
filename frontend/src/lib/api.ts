@@ -93,7 +93,7 @@ async function request<T>(
     },
   });
   if (!res.ok) {
-    let detail = "Request failed";
+    let detail = "Codsigii wuu fashilmay";
     try {
       const data = await res.json();
       detail = data.detail || detail;
