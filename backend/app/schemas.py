@@ -103,6 +103,14 @@ class PublicSurveyOut(BaseModel):
     description: str
     collect_location: bool
     questions: list[QuestionOut]
+    wizard: bool = False
+    sections: list["WizardSectionOut"] = []
+
+
+class WizardSectionOut(BaseModel):
+    id: str
+    title: str
+    question_ids: list[int]
 
 
 class AnswerIn(BaseModel):
@@ -116,6 +124,31 @@ class ResponseSubmit(BaseModel):
     longitude: float | None = None
     accuracy: float | None = None
     location_status: LocationStatus = "skipped"
+
+
+class WizardStartRequest(BaseModel):
+    answers: list[AnswerIn]
+    latitude: float | None = None
+    longitude: float | None = None
+    accuracy: float | None = None
+    location_status: LocationStatus = "skipped"
+
+
+class WizardStepRequest(BaseModel):
+    edit_token: str
+    answers: list[AnswerIn]
+
+
+class WizardCompleteRequest(BaseModel):
+    edit_token: str
+
+
+class WizardDraftOut(BaseModel):
+    ok: bool = True
+    response_id: int
+    edit_token: str
+    status: str
+    step_saved: bool = True
 
 
 class AnswerOut(BaseModel):

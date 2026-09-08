@@ -89,6 +89,9 @@ class Response(Base):
     location_status: Mapped[str] = mapped_column(
         String(32), default="skipped"
     )  # granted | denied | skipped | unavailable
+    # draft = in-progress wizard; complete = finalized submission
+    status: Mapped[str] = mapped_column(String(32), default="complete")
+    edit_token: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
     user_agent: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     survey: Mapped[Survey] = relationship(back_populates="responses")

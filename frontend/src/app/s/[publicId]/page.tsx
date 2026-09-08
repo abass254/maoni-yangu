@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { RefugeeWizard } from "@/components/RefugeeWizard";
 import { api, type LocationStatus, type PublicSurvey } from "@/lib/api";
 
 type GeoResult = {
@@ -165,6 +166,10 @@ export default function RespondPage() {
   }
 
   if (!survey) return null;
+
+  if (survey.wizard && survey.sections && survey.sections.length > 0) {
+    return <RefugeeWizard survey={survey} publicId={publicId} />;
+  }
 
   if (done) {
     return (

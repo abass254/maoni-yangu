@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
@@ -26,6 +26,35 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 class Base(DeclarativeBase):
     pass
+
+
+def ensure_schema() -> None:
+    """Add columns introduced after initial create_all (SQLite-safe)."""
+    with engine.begin() as conn:
+        tables = {
+            row[0]
+            for row in conn.execute(
+                text("SELECT name FROM sqlite_master WHERE type='table'")
+            ).fetchall()
+        }
+        if "responses" not in tables:
+            return
+        cols = {
+            row[1] for row in conn.execute(text("PRAGMA table_info(responses)")).fetchall()
+        }
+        if "status" not in cols:
+            conn.execute(
+                text(
+                    "ALTER TABLE responses ADD COLUMN status VARCHAR(32) DEFAULT 'complete'"
+                )
+            )
+            conn.execute(
+                text("UPDATE responses SET status = 'complete' WHERE status IS NULL")
+            )
+        if "edit_token" not in cols:
+            conn.execute(
+                text("ALTER TABLE responses ADD COLUMN edit_token VARCHAR(64)")
+            )
 
 
 def get_db():

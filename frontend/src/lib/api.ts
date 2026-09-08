@@ -51,6 +51,8 @@ export type PublicSurvey = {
   description: string;
   collect_location: boolean;
   questions: Required<Question>[];
+  wizard?: boolean;
+  sections?: { id: string; title: string; question_ids: number[] }[];
 };
 
 export type ResponseOut = {
@@ -209,6 +211,41 @@ export const api = {
   ) =>
     request<{ ok: boolean; response_id: number }>(
       `/api/public/surveys/${publicId}/responses`,
+      { method: "POST", body: JSON.stringify(body) }
+    ),
+  startWizardResponse: (
+    publicId: string,
+    body: {
+      answers: { question_id: number; value: string }[];
+      latitude?: number | null;
+      longitude?: number | null;
+      accuracy?: number | null;
+      location_status: LocationStatus;
+    }
+  ) =>
+    request<{ ok: boolean; response_id: number; edit_token: string; status: string }>(
+      `/api/public/surveys/${publicId}/responses/start`,
+      { method: "POST", body: JSON.stringify(body) }
+    ),
+  saveWizardStep: (
+    publicId: string,
+    responseId: number,
+    body: {
+      edit_token: string;
+      answers: { question_id: number; value: string }[];
+    }
+  ) =>
+    request<{ ok: boolean; response_id: number; edit_token: string; status: string }>(
+      `/api/public/surveys/${publicId}/responses/${responseId}`,
+      { method: "PATCH", body: JSON.stringify(body) }
+    ),
+  completeWizardResponse: (
+    publicId: string,
+    responseId: number,
+    body: { edit_token: string }
+  ) =>
+    request<{ ok: boolean; response_id: number; edit_token: string; status: string }>(
+      `/api/public/surveys/${publicId}/responses/${responseId}/complete`,
       { method: "POST", body: JSON.stringify(body) }
     ),
   getResults: (token: string, id: number) =>

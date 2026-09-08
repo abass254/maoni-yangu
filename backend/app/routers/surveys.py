@@ -19,6 +19,8 @@ from ..templates import (
     create_germany_refugee_visa_survey,
     create_kenya_elections_survey,
     create_uk_refugee_visa_survey,
+    is_refugee_wizard_survey,
+    refugee_wizard_sections,
 )
 from ..schemas import (
     PublicSurveyOut,
@@ -32,6 +34,11 @@ from ..schemas import (
     SurveyResultsOut,
     SurveyUpdate,
     AnswerOut,
+    WizardCompleteRequest,
+    WizardDraftOut,
+    WizardSectionOut,
+    WizardStartRequest,
+    WizardStepRequest,
 )
 
 router = APIRouter(tags=["surveys"])
@@ -60,6 +67,12 @@ def _question_out(q: Question) -> QuestionOut:
     )
 
 
+def _complete_response_count(survey: Survey) -> int:
+    if survey.responses is None:
+        return 0
+    return sum(1 for r in survey.responses if (r.status or "complete") != "draft")
+
+
 def _survey_out(survey: Survey) -> SurveyOut:
     return SurveyOut(
         id=survey.id,
@@ -71,7 +84,7 @@ def _survey_out(survey: Survey) -> SurveyOut:
         created_at=survey.created_at,
         updated_at=survey.updated_at,
         questions=[_question_out(q) for q in sorted(survey.questions, key=lambda x: x.position)],
-        response_count=len(survey.responses) if survey.responses is not None else 0,
+        response_count=_complete_response_count(survey),
     )
 
 
@@ -130,7 +143,7 @@ def list_surveys(user: User = Depends(get_current_user), db: Session = Depends(g
             created_at=s.created_at,
             updated_at=s.updated_at,
             question_count=len(s.questions),
-            response_count=len(s.responses),
+            response_count=_complete_response_count(s),
         )
         for s in surveys
     ]
@@ -296,8 +309,7 @@ def delete_survey(
     return {"ok": True}
 
 
-@router.get("/public/surveys/{public_id}", response_model=PublicSurveyOut)
-def get_public_survey(public_id: str, db: Session = Depends(get_db)):
+def _published_survey(db: Session, public_id: str) -> Survey:
     survey = (
         db.query(Survey)
         .options(joinedload(Survey.questions))
@@ -306,39 +318,22 @@ def get_public_survey(public_id: str, db: Session = Depends(get_db)):
     )
     if not survey:
         raise HTTPException(status_code=404, detail="Survey not found or not published")
-    return PublicSurveyOut(
-        public_id=survey.public_id,
-        title=survey.title,
-        description=survey.description or "",
-        collect_location=survey.collect_location,
-        questions=[_question_out(q) for q in sorted(survey.questions, key=lambda x: x.position)],
-    )
+    return survey
 
 
-@router.post("/public/surveys/{public_id}/responses", response_model=dict[str, Any])
-def submit_response(
-    public_id: str,
-    body: ResponseSubmit,
-    request: Request,
-    db: Session = Depends(get_db),
-):
-    survey = (
-        db.query(Survey)
-        .options(joinedload(Survey.questions))
-        .filter(Survey.public_id == public_id, Survey.status == "published")
-        .first()
-    )
-    if not survey:
-        raise HTTPException(status_code=404, detail="Survey not found or not published")
+def _validate_answer_values(
+    questions_by_id: dict[int, Question],
+    answers: list,
+    *,
+    require_present: bool,
+) -> None:
+    answered_ids = {a.question_id for a in answers}
+    if require_present:
+        for q in questions_by_id.values():
+            if q.required and q.id not in answered_ids:
+                raise HTTPException(status_code=400, detail=f"Missing answer for: {q.prompt}")
 
-    questions_by_id = {q.id: q for q in survey.questions}
-    answered_ids = {a.question_id for a in body.answers}
-
-    for q in survey.questions:
-        if q.required and q.id not in answered_ids:
-            raise HTTPException(status_code=400, detail=f"Missing answer for: {q.prompt}")
-
-    for ans in body.answers:
+    for ans in answers:
         q = questions_by_id.get(ans.question_id)
         if not q:
             raise HTTPException(status_code=400, detail=f"Unknown question id {ans.question_id}")
@@ -354,6 +349,28 @@ def submit_response(
             if value not in options:
                 raise HTTPException(status_code=400, detail=f"Invalid rating for: {q.prompt}")
 
+
+def _upsert_answers(db: Session, response_id: int, answers: list) -> None:
+    existing = {
+        a.question_id: a
+        for a in db.query(Answer).filter(Answer.response_id == response_id).all()
+    }
+    for ans in answers:
+        value = (ans.value or "").strip()
+        row = existing.get(ans.question_id)
+        if row:
+            row.value = value
+        else:
+            db.add(
+                Answer(
+                    response_id=response_id,
+                    question_id=ans.question_id,
+                    value=value,
+                )
+            )
+
+
+def _require_location(survey: Survey, body: Any) -> tuple[float | None, float | None, float | None, str]:
     lat = body.latitude if survey.collect_location else None
     lng = body.longitude if survey.collect_location else None
     acc = body.accuracy if survey.collect_location else None
@@ -366,6 +383,63 @@ def submit_response(
             )
     elif loc_status != "granted":
         lat, lng, acc = None, None, None
+    return lat, lng, acc, loc_status
+
+
+def _draft_response(
+    db: Session,
+    survey: Survey,
+    response_id: int,
+    edit_token: str,
+) -> SurveyResponse:
+    response = (
+        db.query(SurveyResponse)
+        .filter(
+            SurveyResponse.id == response_id,
+            SurveyResponse.survey_id == survey.id,
+            SurveyResponse.edit_token == edit_token,
+        )
+        .first()
+    )
+    if not response:
+        raise HTTPException(status_code=404, detail="Draft not found")
+    if (response.status or "complete") != "draft":
+        raise HTTPException(status_code=400, detail="This response is already complete")
+    return response
+
+
+@router.get("/public/surveys/{public_id}", response_model=PublicSurveyOut)
+def get_public_survey(public_id: str, db: Session = Depends(get_db)):
+    survey = _published_survey(db, public_id)
+    questions = [_question_out(q) for q in sorted(survey.questions, key=lambda x: x.position)]
+    wizard = is_refugee_wizard_survey(survey.title)
+    sections = (
+        [WizardSectionOut(**s) for s in refugee_wizard_sections(survey.questions)]
+        if wizard
+        else []
+    )
+    return PublicSurveyOut(
+        public_id=survey.public_id,
+        title=survey.title,
+        description=survey.description or "",
+        collect_location=survey.collect_location,
+        questions=questions,
+        wizard=wizard,
+        sections=sections,
+    )
+
+
+@router.post("/public/surveys/{public_id}/responses", response_model=dict[str, Any])
+def submit_response(
+    public_id: str,
+    body: ResponseSubmit,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    survey = _published_survey(db, public_id)
+    questions_by_id = {q.id: q for q in survey.questions}
+    _validate_answer_values(questions_by_id, body.answers, require_present=True)
+    lat, lng, acc, loc_status = _require_location(survey, body)
 
     response = SurveyResponse(
         survey_id=survey.id,
@@ -373,20 +447,140 @@ def submit_response(
         longitude=lng,
         accuracy=acc,
         location_status=loc_status,
+        status="complete",
         user_agent=request.headers.get("user-agent"),
     )
     db.add(response)
     db.flush()
-    for ans in body.answers:
-        db.add(
-            Answer(
-                response_id=response.id,
-                question_id=ans.question_id,
-                value=(ans.value or "").strip(),
-            )
-        )
+    _upsert_answers(db, response.id, body.answers)
     db.commit()
     return {"ok": True, "response_id": response.id}
+
+
+@router.post(
+    "/public/surveys/{public_id}/responses/start",
+    response_model=WizardDraftOut,
+)
+def start_wizard_response(
+    public_id: str,
+    body: WizardStartRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    survey = _published_survey(db, public_id)
+    if not is_refugee_wizard_survey(survey.title):
+        raise HTTPException(status_code=400, detail="This survey is not a wizard flow")
+
+    sections = refugee_wizard_sections(survey.questions)
+    if not sections:
+        raise HTTPException(status_code=400, detail="No wizard sections configured")
+    first_ids = set(sections[0]["question_ids"])
+    questions_by_id = {q.id: q for q in survey.questions if q.id in first_ids}
+    for ans in body.answers:
+        if ans.question_id not in first_ids:
+            raise HTTPException(
+                status_code=400,
+                detail="First step may only include bio-section answers",
+            )
+    _validate_answer_values(questions_by_id, body.answers, require_present=True)
+    lat, lng, acc, loc_status = _require_location(survey, body)
+
+    edit_token = secrets.token_urlsafe(24)
+    response = SurveyResponse(
+        survey_id=survey.id,
+        latitude=lat,
+        longitude=lng,
+        accuracy=acc,
+        location_status=loc_status,
+        status="draft",
+        edit_token=edit_token,
+        user_agent=request.headers.get("user-agent"),
+    )
+    db.add(response)
+    db.flush()
+    _upsert_answers(db, response.id, body.answers)
+    db.commit()
+    return WizardDraftOut(
+        response_id=response.id,
+        edit_token=edit_token,
+        status="draft",
+    )
+
+
+@router.patch(
+    "/public/surveys/{public_id}/responses/{response_id}",
+    response_model=WizardDraftOut,
+)
+def save_wizard_step(
+    public_id: str,
+    response_id: int,
+    body: WizardStepRequest,
+    db: Session = Depends(get_db),
+):
+    survey = _published_survey(db, public_id)
+    response = _draft_response(db, survey, response_id, body.edit_token)
+    questions_by_id = {q.id: q for q in survey.questions}
+    allowed = set(questions_by_id.keys())
+    for ans in body.answers:
+        if ans.question_id not in allowed:
+            raise HTTPException(status_code=400, detail=f"Unknown question id {ans.question_id}")
+    # Only validate values present in this step (not the whole survey)
+    step_questions = {
+        qid: questions_by_id[qid]
+        for qid in {a.question_id for a in body.answers}
+        if qid in questions_by_id
+    }
+    _validate_answer_values(step_questions, body.answers, require_present=True)
+    _upsert_answers(db, response.id, body.answers)
+    db.commit()
+    return WizardDraftOut(
+        response_id=response.id,
+        edit_token=body.edit_token,
+        status="draft",
+    )
+
+
+@router.post(
+    "/public/surveys/{public_id}/responses/{response_id}/complete",
+    response_model=WizardDraftOut,
+)
+def complete_wizard_response(
+    public_id: str,
+    response_id: int,
+    body: WizardCompleteRequest,
+    db: Session = Depends(get_db),
+):
+    from ..models import utcnow
+
+    survey = _published_survey(db, public_id)
+    response = _draft_response(db, survey, response_id, body.edit_token)
+    existing_answers = {
+        a.question_id: a
+        for a in db.query(Answer).filter(Answer.response_id == response.id).all()
+    }
+    questions_by_id = {q.id: q for q in survey.questions}
+    for q in survey.questions:
+        if not q.required:
+            continue
+        row = existing_answers.get(q.id)
+        if not row or not (row.value or "").strip():
+            raise HTTPException(status_code=400, detail=f"Missing answer for: {q.prompt}")
+
+    if survey.collect_location:
+        if response.location_status != "granted" or response.latitude is None:
+            raise HTTPException(
+                status_code=400,
+                detail="Location must be saved on the first step before completing",
+            )
+
+    response.status = "complete"
+    response.submitted_at = utcnow()
+    db.commit()
+    return WizardDraftOut(
+        response_id=response.id,
+        edit_token=body.edit_token,
+        status="complete",
+    )
 
 
 @router.get("/surveys/{survey_id}/results", response_model=SurveyResultsOut)
@@ -399,7 +593,10 @@ def get_results(
     responses = (
         db.query(SurveyResponse)
         .options(joinedload(SurveyResponse.answers))
-        .filter(SurveyResponse.survey_id == survey.id)
+        .filter(
+            SurveyResponse.survey_id == survey.id,
+            SurveyResponse.status != "draft",
+        )
         .order_by(SurveyResponse.submitted_at.desc())
         .all()
     )
@@ -448,7 +645,10 @@ def export_csv(
     responses = (
         db.query(SurveyResponse)
         .options(joinedload(SurveyResponse.answers))
-        .filter(SurveyResponse.survey_id == survey.id)
+        .filter(
+            SurveyResponse.survey_id == survey.id,
+            SurveyResponse.status != "draft",
+        )
         .order_by(SurveyResponse.submitted_at.asc())
         .all()
     )

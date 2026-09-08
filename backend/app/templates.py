@@ -503,6 +503,50 @@ DEFAULT_TEMPLATE_TITLES = {
     "australia-refugee-visa": "Codsiga Fiisaha Qaxootiga — Australia",
 }
 
+REFUGEE_TEMPLATE_TITLES = {
+    DEFAULT_TEMPLATE_TITLES["canada-refugee-visa"],
+    DEFAULT_TEMPLATE_TITLES["germany-refugee-visa"],
+    DEFAULT_TEMPLATE_TITLES["uk-refugee-visa"],
+    DEFAULT_TEMPLATE_TITLES["australia-refugee-visa"],
+}
+
+# Position ranges (inclusive) for the shared refugee intake question list.
+REFUGEE_WIZARD_SECTIONS: list[tuple[str, str, range]] = [
+    ("bio", "1. Macluumaadka shakhsiyeed", range(0, 8)),
+    ("situation", "2. Xaaladdaada hadda", range(8, 12)),
+    ("protection", "3. Sababta ilaalinta", range(12, 16)),
+    ("documents", "4. Dukumeentiyada iyo taariikhda", range(16, 19)),
+    ("support", "5. Caawimada iyo xiriirka", range(19, 26)),
+]
+
+
+def is_refugee_wizard_survey(title: str) -> bool:
+    return title in REFUGEE_TEMPLATE_TITLES or title.startswith(
+        "Codsiga Fiisaha Qaxootiga"
+    )
+
+
+def refugee_wizard_sections(questions: list) -> list[dict]:
+    """Build wizard sections from ordered survey questions."""
+    ordered = sorted(questions, key=lambda q: q.position)
+    sections: list[dict] = []
+    for section_id, title, positions in REFUGEE_WIZARD_SECTIONS:
+        ids = [ordered[i].id for i in positions if i < len(ordered)]
+        if ids:
+            sections.append({"id": section_id, "title": title, "question_ids": ids})
+    # Any leftover questions go into a final "other" section
+    covered = {qid for s in sections for qid in s["question_ids"]}
+    leftover = [q.id for q in ordered if q.id not in covered]
+    if leftover:
+        sections.append(
+            {
+                "id": "extra",
+                "title": f"{len(sections) + 1}. Su'aalo kale",
+                "question_ids": leftover,
+            }
+        )
+    return sections
+
 
 def create_default_job_application_survey(db: Session, user: User) -> Survey:
     return _create_survey_from_questions(
