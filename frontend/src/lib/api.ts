@@ -3,6 +3,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8200";
 export type QuestionType = "text" | "multiple_choice" | "rating";
 export type SurveyStatus = "draft" | "published";
 export type LocationStatus = "granted" | "denied" | "skipped" | "unavailable";
+export type SurveyLanguage = "en" | "so";
 
 export type User = {
   id: number;
@@ -26,6 +27,7 @@ export type Survey = {
   description: string;
   status: SurveyStatus;
   collect_location: boolean;
+  language?: SurveyLanguage;
   created_at: string;
   updated_at: string;
   questions: Question[];
@@ -39,6 +41,7 @@ export type SurveyListItem = {
   description: string;
   status: SurveyStatus;
   collect_location: boolean;
+  language?: SurveyLanguage;
   created_at: string;
   updated_at: string;
   question_count: number;
@@ -50,6 +53,7 @@ export type PublicSurvey = {
   title: string;
   description: string;
   collect_location: boolean;
+  language?: SurveyLanguage;
   questions: Required<Question>[];
   wizard?: boolean;
   sections?: { id: string; title: string; question_ids: number[] }[];
@@ -95,7 +99,7 @@ async function request<T>(
     },
   });
   if (!res.ok) {
-    let detail = "Codsigii wuu fashilmay";
+    let detail = "Request failed";
     try {
       const data = await res.json();
       detail = data.detail || detail;
@@ -183,6 +187,7 @@ export const api = {
       description: string;
       status: SurveyStatus;
       collect_location: boolean;
+      language: SurveyLanguage;
       questions: Question[];
     }>
   ) =>

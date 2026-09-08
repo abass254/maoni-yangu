@@ -37,24 +37,36 @@ def ensure_schema() -> None:
                 text("SELECT name FROM sqlite_master WHERE type='table'")
             ).fetchall()
         }
-        if "responses" not in tables:
-            return
-        cols = {
-            row[1] for row in conn.execute(text("PRAGMA table_info(responses)")).fetchall()
-        }
-        if "status" not in cols:
-            conn.execute(
-                text(
-                    "ALTER TABLE responses ADD COLUMN status VARCHAR(32) DEFAULT 'complete'"
+        if "responses" in tables:
+            cols = {
+                row[1]
+                for row in conn.execute(text("PRAGMA table_info(responses)")).fetchall()
+            }
+            if "status" not in cols:
+                conn.execute(
+                    text(
+                        "ALTER TABLE responses ADD COLUMN status VARCHAR(32) DEFAULT 'complete'"
+                    )
                 )
-            )
-            conn.execute(
-                text("UPDATE responses SET status = 'complete' WHERE status IS NULL")
-            )
-        if "edit_token" not in cols:
-            conn.execute(
-                text("ALTER TABLE responses ADD COLUMN edit_token VARCHAR(64)")
-            )
+                conn.execute(
+                    text("UPDATE responses SET status = 'complete' WHERE status IS NULL")
+                )
+            if "edit_token" not in cols:
+                conn.execute(
+                    text("ALTER TABLE responses ADD COLUMN edit_token VARCHAR(64)")
+                )
+        if "surveys" in tables:
+            survey_cols = {
+                row[1]
+                for row in conn.execute(text("PRAGMA table_info(surveys)")).fetchall()
+            }
+            if "language" not in survey_cols:
+                conn.execute(
+                    text("ALTER TABLE surveys ADD COLUMN language VARCHAR(8) DEFAULT 'en'")
+                )
+                conn.execute(
+                    text("UPDATE surveys SET language = 'en' WHERE language IS NULL")
+                )
 
 
 def get_db():

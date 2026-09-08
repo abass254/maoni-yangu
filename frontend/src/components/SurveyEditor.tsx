@@ -17,9 +17,9 @@ type Props = {
 };
 
 const TYPES: { value: QuestionType; label: string }[] = [
-  { value: "text", label: "Qoraal gaaban" },
-  { value: "multiple_choice", label: "Doorasho badan" },
-  { value: "rating", label: "Qiimeyn 1–5" },
+  { value: "text", label: "Short text" },
+  { value: "multiple_choice", label: "Multiple choice" },
+  { value: "rating", label: "Rating 1–5" },
 ];
 
 function blankQuestion(position: number): Question {
@@ -59,20 +59,20 @@ export function SurveyEditor({
   return (
     <div style={{ display: "grid", gap: "1.25rem" }}>
       <label style={labelStyle}>
-        Cinwaanka sahanka
+        Survey title
         <input
           value={title}
           onChange={(e) => update({ title: e.target.value })}
-          placeholder="Tusaale: khibradda macaamiisha"
+          placeholder="e.g. Customer experience"
           style={inputStyle}
         />
       </label>
       <label style={labelStyle}>
-        Sharaxaad
+        Description
         <textarea
           value={description}
           onChange={(e) => update({ description: e.target.value })}
-          placeholder="U sheeg jawaab-bixiyayaasha waxa uu sahanakan ku saabsan yahay"
+          placeholder="Tell respondents what this survey is about"
           rows={3}
           style={{ ...inputStyle, resize: "vertical" }}
         />
@@ -96,11 +96,11 @@ export function SurveyEditor({
         />
         <span>
           <strong style={{ display: "block", marginBottom: 4 }}>
-            Ururi goobta marka la gudbiyo
+            Collect location on submit
           </strong>
           <span style={{ color: "var(--muted)", fontSize: "0.92rem" }}>
-            Jawaab-bixiyayaashu waa inay daaraan GPS ka hor inta aysan gudbin.
-            Gudbinta aan goob lahayn waa la diidayaa.
+            Respondents must enable GPS before they can submit.
+            Submissions without location are rejected.
           </span>
         </span>
       </label>
@@ -108,20 +108,20 @@ export function SurveyEditor({
       <div style={{ display: "grid", gap: "1rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h2 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: "1.35rem" }}>
-            Su&apos;aalaha
+            Questions
           </h2>
           <button
             type="button"
             onClick={() => update({ questions: [...questions, blankQuestion(questions.length)] })}
             style={secondaryBtn}
           >
-            Ku dar su&apos;aal
+            Add question
           </button>
         </div>
 
         {questions.length === 0 && (
           <p style={{ color: "var(--muted)" }}>
-            Ku dar ugu yaraan hal su&apos;aal ka hor intaadan daabicin.
+            Add at least one question before publishing.
           </p>
         )}
 
@@ -151,7 +151,7 @@ export function SurveyEditor({
                         : question_type === "multiple_choice"
                           ? q.options.length
                             ? q.options
-                            : ["Doorashada A", "Doorashada B"]
+                            : ["Option A", "Option B"]
                           : [],
                   });
                 }}
@@ -169,7 +169,7 @@ export function SurveyEditor({
                   checked={q.required}
                   onChange={(e) => setQuestion(index, { ...q, required: e.target.checked })}
                 />
-                Waajib
+                Required
               </label>
               <button
                 type="button"
@@ -184,13 +184,13 @@ export function SurveyEditor({
                   cursor: "pointer",
                 }}
               >
-                Tirtir
+                Delete
               </button>
             </div>
             <input
               value={q.prompt}
               onChange={(e) => setQuestion(index, { ...q, prompt: e.target.value })}
-              placeholder={`Su'aasha ${index + 1}`}
+              placeholder={`Question ${index + 1}`}
               style={inputStyle}
             />
             {q.question_type === "multiple_choice" && (
@@ -233,7 +233,7 @@ export function SurveyEditor({
                     onChange={(e) =>
                       setOptionDrafts((d) => ({ ...d, [index]: e.target.value }))
                     }
-                    placeholder="Doorasho cusub"
+                    placeholder="New option"
                     style={inputStyle}
                   />
                   <button
@@ -246,7 +246,7 @@ export function SurveyEditor({
                     }}
                     style={secondaryBtn}
                   >
-                    Ku dar doorasho
+                    Add option
                   </button>
                 </div>
               </div>

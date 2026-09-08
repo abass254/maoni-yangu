@@ -22,16 +22,16 @@ export default function LoginPage() {
       await login(email, password);
       router.push("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gelitaanku wuu fashilmay");
+      setError(err instanceof Error ? err.message : "Login failed");
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <AuthCard title="Soo dhawoow" subtitle="Gali si aad u maamusho sahannadaada.">
+    <AuthCard title="Welcome back" subtitle="Log in to manage your surveys.">
       <form onSubmit={onSubmit} style={{ display: "grid", gap: "0.9rem" }}>
-        <Field label="Iimayl">
+        <Field label="Email">
           <input
             type="email"
             required
@@ -40,7 +40,7 @@ export default function LoginPage() {
             style={inputStyle}
           />
         </Field>
-        <Field label="Furaha sirta">
+        <Field label="Password">
           <input
             type="password"
             required
@@ -51,11 +51,11 @@ export default function LoginPage() {
         </Field>
         {error && <p style={{ color: "var(--danger)", margin: 0 }}>{error}</p>}
         <button type="submit" disabled={busy} style={primaryBtn}>
-          {busy ? "Waa la gelayaa…" : "Gal"}
+          {busy ? "Signing in…" : "Log in"}
         </button>
       </form>
       <p style={{ color: "var(--muted)", marginTop: "1rem" }}>
-        Ma lihid akoon? <Link href="/register">Isdiiwaangeli</Link>
+        No account? <Link href="/register">Register</Link>
       </p>
     </AuthCard>
   );

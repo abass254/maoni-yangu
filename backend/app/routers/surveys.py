@@ -14,6 +14,7 @@ from ..database import get_db
 from ..models import Answer, Question, Response as SurveyResponse, Survey, User
 from ..templates import (
     DEFAULT_TEMPLATE_TITLES,
+    apply_survey_language,
     create_australia_refugee_visa_survey,
     create_canada_refugee_visa_survey,
     create_germany_refugee_visa_survey,
@@ -81,6 +82,7 @@ def _survey_out(survey: Survey) -> SurveyOut:
         description=survey.description or "",
         status=survey.status,  # type: ignore[arg-type]
         collect_location=survey.collect_location,
+        language=(survey.language or "en"),  # type: ignore[arg-type]
         created_at=survey.created_at,
         updated_at=survey.updated_at,
         questions=[_question_out(q) for q in sorted(survey.questions, key=lambda x: x.position)],
@@ -140,6 +142,7 @@ def list_surveys(user: User = Depends(get_current_user), db: Session = Depends(g
             description=s.description or "",
             status=s.status,  # type: ignore[arg-type]
             collect_location=s.collect_location,
+            language=(s.language or "en"),  # type: ignore[arg-type]
             created_at=s.created_at,
             updated_at=s.updated_at,
             question_count=len(s.questions),
@@ -161,6 +164,7 @@ def create_survey(
         title=body.title.strip(),
         description=body.description.strip(),
         collect_location=body.collect_location,
+        language=body.language,
         status="draft",
     )
     db.add(survey)
@@ -291,7 +295,11 @@ def update_survey(
         if body.status == "published" and not survey.questions:
             raise HTTPException(status_code=400, detail="Add at least one question before publishing")
         survey.status = body.status
-    if body.questions is not None:
+    rewrote_from_pack = False
+    if body.language is not None:
+        rewrote_from_pack = apply_survey_language(db, survey, body.language)
+        survey = _owned_survey(db, survey_id, user)
+    if body.questions is not None and not rewrote_from_pack:
         _replace_questions(db, survey, body.questions)
     db.commit()
     return _survey_out(_owned_survey(db, survey_id, user))
@@ -411,10 +419,11 @@ def _draft_response(
 @router.get("/public/surveys/{public_id}", response_model=PublicSurveyOut)
 def get_public_survey(public_id: str, db: Session = Depends(get_db)):
     survey = _published_survey(db, public_id)
+    lang = "so" if (survey.language or "en") == "so" else "en"
     questions = [_question_out(q) for q in sorted(survey.questions, key=lambda x: x.position)]
     wizard = is_refugee_wizard_survey(survey.title)
     sections = (
-        [WizardSectionOut(**s) for s in refugee_wizard_sections(survey.questions)]
+        [WizardSectionOut(**s) for s in refugee_wizard_sections(survey.questions, lang)]
         if wizard
         else []
     )
@@ -423,6 +432,7 @@ def get_public_survey(public_id: str, db: Session = Depends(get_db)):
         title=survey.title,
         description=survey.description or "",
         collect_location=survey.collect_location,
+        language=lang,  # type: ignore[arg-type]
         questions=questions,
         wizard=wizard,
         sections=sections,

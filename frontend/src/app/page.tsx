@@ -21,7 +21,7 @@ export default function HomePage() {
           fontWeight: 600,
         }}
       >
-        Fikradahaaga, goobta ku xiran
+        Your insights, tied to place
       </p>
       <h1
         style={{
@@ -44,8 +44,8 @@ export default function HomePage() {
           lineHeight: 1.55,
         }}
       >
-        Samee sahanno, wadaag xiriiriye, ururi jawaabo — oo qor isku-duwaha
-        meesha jawaab kasta laga soo gudbiyay.
+        Create surveys, share a link, collect answers — and capture the
+        coordinates where each response was submitted.
       </p>
       <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
         <Link
@@ -58,7 +58,7 @@ export default function HomePage() {
             fontWeight: 700,
           }}
         >
-          Samee sahankaaga ugu horreeya
+          Create your first survey
         </Link>
         <Link
           href="/login"
@@ -68,7 +68,7 @@ export default function HomePage() {
             padding: "0.85rem 1.4rem",
           }}
         >
-          Gal
+          Log in
         </Link>
       </div>
     </section>

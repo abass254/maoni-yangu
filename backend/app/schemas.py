@@ -8,6 +8,7 @@ from pydantic import BaseModel, EmailStr, Field
 QuestionType = Literal["text", "multiple_choice", "rating"]
 SurveyStatus = Literal["draft", "published"]
 LocationStatus = Literal["granted", "denied", "skipped", "unavailable"]
+SurveyLanguage = Literal["en", "so"]
 
 
 class RegisterRequest(BaseModel):
@@ -58,6 +59,7 @@ class SurveyCreate(BaseModel):
     title: str = Field(min_length=1, max_length=255)
     description: str = ""
     collect_location: bool = True
+    language: SurveyLanguage = "en"
     questions: list[QuestionIn] = []
 
 
@@ -66,6 +68,7 @@ class SurveyUpdate(BaseModel):
     description: str | None = None
     status: SurveyStatus | None = None
     collect_location: bool | None = None
+    language: SurveyLanguage | None = None
     questions: list[QuestionIn] | None = None
 
 
@@ -76,6 +79,7 @@ class SurveyOut(BaseModel):
     description: str
     status: SurveyStatus
     collect_location: bool
+    language: SurveyLanguage = "en"
     created_at: datetime
     updated_at: datetime
     questions: list[QuestionOut]
@@ -91,6 +95,7 @@ class SurveyListItem(BaseModel):
     description: str
     status: SurveyStatus
     collect_location: bool
+    language: SurveyLanguage = "en"
     created_at: datetime
     updated_at: datetime
     question_count: int
@@ -102,6 +107,7 @@ class PublicSurveyOut(BaseModel):
     title: str
     description: str
     collect_location: bool
+    language: SurveyLanguage = "en"
     questions: list[QuestionOut]
     wizard: bool = False
     sections: list["WizardSectionOut"] = []

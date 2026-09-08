@@ -73,7 +73,7 @@ export default function RespondPage() {
         setAnswers(initial);
       })
       .catch((err) =>
-        setError(err instanceof Error ? err.message : "Sahanka lama heli karo")
+        setError(err instanceof Error ? err.message : "Survey not found")
       )
       .finally(() => setLoading(false));
   }, [publicId]);
@@ -87,8 +87,8 @@ export default function RespondPage() {
     if (geo.location_status !== "granted") {
       setError(
         geo.location_status === "denied"
-          ? "Oggolaanshaha goobta waa la diiday. Daar goobta goobaha browser-kaaga, ka dib isku day mar kale."
-          : "Goobta lagama heli karo qalabkan. Daar GPS-ka oo isku day mar kale."
+          ? "Location permission was denied. Enable location in your browser settings, then try again."
+          : "Location is unavailable on this device. Enable GPS and try again."
       );
     }
   }
@@ -98,13 +98,13 @@ export default function RespondPage() {
     if (!survey) return;
 
     if (needsLocation && !locationReady) {
-      setError("Marka hore daar goobta ka hor intaadan buuxin oo gudbin foomkan.");
+      setError("Enable location first before filling out and submitting this form.");
       return;
     }
 
     for (const q of survey.questions) {
       if (q.required && !(answers[q.id] || "").trim()) {
-        setError(`Fadlan ka jawaab: ${q.prompt}`);
+        setError(`Please answer: ${q.prompt}`);
         return;
       }
     }
@@ -122,7 +122,7 @@ export default function RespondPage() {
           };
 
       if (needsLocation && geo.location_status !== "granted") {
-        setError("Goobtu waa waajib. Marka hore daar goobta, ka dib gudbi.");
+        setError("Location is required. Enable location first, then submit.");
         return;
       }
 
@@ -135,7 +135,7 @@ export default function RespondPage() {
       });
       setDone(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gudbintu way fashilantay");
+      setError(err instanceof Error ? err.message : "Submission failed");
     } finally {
       setBusy(false);
     }
@@ -146,7 +146,7 @@ export default function RespondPage() {
       <section className="respond-page">
         <div className="respond-card">
           <p className="respond-hint" style={{ margin: 0, textAlign: "center" }}>
-            Waa la soo rarayaa…
+            Loading…
           </p>
         </div>
       </section>
@@ -175,8 +175,8 @@ export default function RespondPage() {
     return (
       <section className="respond-page">
         <div className="respond-card" style={{ textAlign: "center", paddingTop: "2.5rem", paddingBottom: "2.5rem" }}>
-          <h1 className="respond-success-title">Waad ku mahadsan tahay ka qaybqaadashada sahankan</h1>
-          <p className="respond-success-text">Kooxdeenu way kula soo xiriiri doontaa.</p>
+          <h1 className="respond-success-title">Thank you for taking this survey</h1>
+          <p className="respond-success-text">Our team will be in touch.</p>
         </div>
       </section>
     );
@@ -191,9 +191,9 @@ export default function RespondPage() {
 
         {needsLocation && (
           <div className={`respond-step${locationReady ? " is-ready" : ""}`}>
-            <strong className="respond-step-title">Tallaabada 1 — Daar goobta</strong>
+            <strong className="respond-step-title">Step 1 — Enable location</strong>
             <p className="respond-step-help" style={{ margin: 0 }}>
-              Waa in goobta la daaraa ka hor intaadan ka jawaabin oo gudbin sahankan.
+              Location must be enabled before you can answer and submit this survey.
             </p>
             {locationReady ? (
               <p
@@ -204,7 +204,7 @@ export default function RespondPage() {
                   fontSize: "1.05rem",
                 }}
               >
-                Goobta waa la daaray
+                Location enabled
                 {location?.accuracy != null ? ` · ±${Math.round(location.accuracy)}m` : ""}
               </p>
             ) : (
@@ -215,7 +215,7 @@ export default function RespondPage() {
                 onClick={() => void enableLocation()}
                 disabled={locating}
               >
-                {locating ? "Goobta waa la helayaa…" : "Daar goobta"}
+                {locating ? "Getting location…" : "Enable location"}
               </button>
             )}
           </div>
@@ -223,13 +223,13 @@ export default function RespondPage() {
 
         {!canFillForm ? (
           <p className="respond-hint" style={{ margin: "1.1rem 0 0" }}>
-            Daar goobta kore si aad u furto foomka sahanka.
+            Enable location above to unlock the survey form.
           </p>
         ) : (
           <form onSubmit={onSubmit} className="respond-form">
             {needsLocation && (
               <p className="respond-hint" style={{ margin: 0 }}>
-                Tallaabada 2 — Ka jawaab su&apos;aalaha, ka dib gudbi.
+                Step 2 — Answer the questions, then submit.
               </p>
             )}
 
@@ -247,7 +247,7 @@ export default function RespondPage() {
                     onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
                     rows={4}
                     className="respond-textarea"
-                    placeholder="Halkan ku qor jawaabtaada"
+                    placeholder="Type your answer here"
                   />
                 )}
 
@@ -292,7 +292,7 @@ export default function RespondPage() {
               className="respond-btn respond-btn-primary"
               disabled={busy || (needsLocation && !locationReady)}
             >
-              {busy ? "Waa la gudbinayaa…" : "Gudbi jawaabta"}
+              {busy ? "Submitting…" : "Submit response"}
             </button>
           </form>
         )}

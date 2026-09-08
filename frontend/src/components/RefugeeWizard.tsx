@@ -20,6 +20,60 @@ type Props = {
   publicId: string;
 };
 
+const COPY = {
+  en: {
+    formFallback: "Form",
+    answerPlaceholder: "Type your answer here",
+    pleaseAnswer: (prompt: string) => `Please answer: ${prompt}`,
+    enableLocationFirst: "Enable location first before submitting this step.",
+    locationDenied:
+      "Location permission was denied. Enable location in your browser settings, then try again.",
+    locationUnavailable:
+      "Location is unavailable on this device. Enable GPS and try again.",
+    saveFailed: "Save failed",
+    thankYouTitle: "Thank you for taking this survey",
+    thankYouBody: "Your information has been saved. Our team will be in touch.",
+    progressLabel: "Form progress",
+    stepOf: (step: number, total: number) => `Step ${step} of ${total}`,
+    saved: " · Saved",
+    locationTitle: "Location (start here)",
+    locationHelp: "Location must be saved when the first step is submitted.",
+    locationEnabled: "Location enabled",
+    gettingLocation: "Getting location…",
+    enableLocation: "Enable location",
+    back: "Back",
+    saving: "Saving…",
+    finishSubmit: "Finish & submit",
+    saveContinue: "Save & continue",
+  },
+  so: {
+    formFallback: "Foomka",
+    answerPlaceholder: "Halkan ku qor jawaabtaada",
+    pleaseAnswer: (prompt: string) => `Fadlan ka jawaab: ${prompt}`,
+    enableLocationFirst: "Marka hore daar goobta ka hor intaadan gudbin tallaabadan.",
+    locationDenied:
+      "Oggolaanshaha goobta waa la diiday. Daar goobta goobaha browser-kaaga, ka dib isku day mar kale.",
+    locationUnavailable:
+      "Goobta lagama heli karo qalabkan. Daar GPS-ka oo isku day mar kale.",
+    saveFailed: "Kaydintu way fashilantay",
+    thankYouTitle: "Waad ku mahadsan tahay ka qaybqaadashada sahankan",
+    thankYouBody:
+      "Macluumaadkaaga waa la kaydiyay. Kooxdeenu way kula soo xiriiri doontaa.",
+    progressLabel: "Horumarka foomka",
+    stepOf: (step: number, total: number) => `Tallaabada ${step} ee ${total}`,
+    saved: " · Waa la kaydiyay",
+    locationTitle: "Goobta (laga bilaabo halkan)",
+    locationHelp: "Goobta waa in la kaydiyaa marka tallaabada koowaad la gudbiyo.",
+    locationEnabled: "Goobta waa la daaray",
+    gettingLocation: "Goobta waa la helayaa…",
+    enableLocation: "Daar goobta",
+    back: "Dib u noqo",
+    saving: "Waa la kaydinayaa…",
+    finishSubmit: "Dhammee oo gudbi",
+    saveContinue: "Kaydi oo sii soco",
+  },
+} as const;
+
 async function captureLocation(): Promise<GeoResult> {
   if (typeof navigator === "undefined" || !navigator.geolocation) {
     return {
@@ -57,10 +111,12 @@ function QuestionFields({
   questions,
   answers,
   setAnswers,
+  placeholder,
 }: {
   questions: Required<Question>[];
   answers: Record<number, string>;
   setAnswers: React.Dispatch<React.SetStateAction<Record<number, string>>>;
+  placeholder: string;
 }) {
   return (
     <>
@@ -78,7 +134,7 @@ function QuestionFields({
               onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
               rows={3}
               className="respond-textarea"
-              placeholder="Halkan ku qor jawaabtaada"
+              placeholder={placeholder}
             />
           )}
 
@@ -120,9 +176,11 @@ function QuestionFields({
 }
 
 export function RefugeeWizard({ survey, publicId }: Props) {
+  const t = survey.language === "so" ? COPY.so : COPY.en;
+
   const sections = survey.sections?.length
     ? survey.sections
-    : [{ id: "all", title: "Foomka", question_ids: survey.questions.map((q) => q.id) }];
+    : [{ id: "all", title: t.formFallback, question_ids: survey.questions.map((q) => q.id) }];
 
   const questionsById = useMemo(() => {
     const map = new Map<number, Required<Question>>();
@@ -159,11 +217,11 @@ export function RefugeeWizard({ survey, publicId }: Props) {
   function validateSection(): string | null {
     for (const q of currentQuestions) {
       if (q.required && !(answers[q.id] || "").trim()) {
-        return `Fadlan ka jawaab: ${q.prompt}`;
+        return t.pleaseAnswer(q.prompt);
       }
     }
     if (isFirst && needsLocation && !locationReady) {
-      return "Marka hore daar goobta ka hor intaadan gudbin tallaabadan.";
+      return t.enableLocationFirst;
     }
     return null;
   }
@@ -176,9 +234,7 @@ export function RefugeeWizard({ survey, publicId }: Props) {
     setLocating(false);
     if (geo.location_status !== "granted") {
       setError(
-        geo.location_status === "denied"
-          ? "Oggolaanshaha goobta waa la diiday. Daar goobta goobaha browser-kaaga, ka dib isku day mar kale."
-          : "Goobta lagama heli karo qalabkan. Daar GPS-ka oo isku day mar kale."
+        geo.location_status === "denied" ? t.locationDenied : t.locationUnavailable
       );
     }
   }
@@ -232,7 +288,7 @@ export function RefugeeWizard({ survey, publicId }: Props) {
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Kaydintu way fashilantay");
+      setError(err instanceof Error ? err.message : t.saveFailed);
     } finally {
       setBusy(false);
     }
@@ -245,12 +301,8 @@ export function RefugeeWizard({ survey, publicId }: Props) {
           className="respond-card"
           style={{ textAlign: "center", paddingTop: "2.5rem", paddingBottom: "2.5rem" }}
         >
-          <h1 className="respond-success-title">
-            Waad ku mahadsan tahay ka qaybqaadashada sahankan
-          </h1>
-          <p className="respond-success-text">
-            Macluumaadkaaga waa la kaydiyay. Kooxdeenu way kula soo xiriiri doontaa.
-          </p>
+          <h1 className="respond-success-title">{t.thankYouTitle}</h1>
+          <p className="respond-success-text">{t.thankYouBody}</p>
         </div>
       </section>
     );
@@ -263,7 +315,7 @@ export function RefugeeWizard({ survey, publicId }: Props) {
         <h1 className="respond-title">{survey.title}</h1>
         {survey.description && <p className="respond-desc">{survey.description}</p>}
 
-        <div className="wizard-progress" aria-label="Horumarka foomka">
+        <div className="wizard-progress" aria-label={t.progressLabel}>
           {sections.map((s, i) => (
             <div
               key={s.id}
@@ -281,16 +333,16 @@ export function RefugeeWizard({ survey, publicId }: Props) {
           <div className="respond-step is-ready">
             <strong className="respond-step-title">{current.title}</strong>
             <p className="respond-step-help" style={{ margin: "0.35rem 0 0" }}>
-              Tallaabada {step + 1} ee {sections.length}
-              {savedFlash ? " · Waa la kaydiyay" : ""}
+              {t.stepOf(step + 1, sections.length)}
+              {savedFlash ? t.saved : ""}
             </p>
           </div>
 
           {isFirst && needsLocation && (
             <div className={`respond-step${locationReady ? " is-ready" : ""}`}>
-              <strong className="respond-step-title">Goobta (laga bilaabo halkan)</strong>
+              <strong className="respond-step-title">{t.locationTitle}</strong>
               <p className="respond-step-help" style={{ margin: 0 }}>
-                Goobta waa in la kaydiyaa marka tallaabada koowaad la gudbiyo.
+                {t.locationHelp}
               </p>
               {locationReady ? (
                 <p
@@ -301,7 +353,7 @@ export function RefugeeWizard({ survey, publicId }: Props) {
                     fontSize: "1.05rem",
                   }}
                 >
-                  Goobta waa la daaray
+                  {t.locationEnabled}
                   {location?.accuracy != null ? ` · ±${Math.round(location.accuracy)}m` : ""}
                 </p>
               ) : (
@@ -312,7 +364,7 @@ export function RefugeeWizard({ survey, publicId }: Props) {
                   onClick={() => void enableLocation()}
                   disabled={locating}
                 >
-                  {locating ? "Goobta waa la helayaa…" : "Daar goobta"}
+                  {locating ? t.gettingLocation : t.enableLocation}
                 </button>
               )}
             </div>
@@ -322,6 +374,7 @@ export function RefugeeWizard({ survey, publicId }: Props) {
             questions={currentQuestions}
             answers={answers}
             setAnswers={setAnswers}
+            placeholder={t.answerPlaceholder}
           />
 
           {error && <p className="respond-error">{error}</p>}
@@ -342,7 +395,7 @@ export function RefugeeWizard({ survey, publicId }: Props) {
                   color: "var(--respond-ink)",
                 }}
               >
-                Dib u noqo
+                {t.back}
               </button>
             )}
             <button
@@ -351,10 +404,10 @@ export function RefugeeWizard({ survey, publicId }: Props) {
               disabled={busy || (isFirst && needsLocation && !locationReady)}
             >
               {busy
-                ? "Waa la kaydinayaa…"
+                ? t.saving
                 : isLast
-                  ? "Dhammee oo gudbi"
-                  : "Kaydi oo sii soco"}
+                  ? t.finishSubmit
+                  : t.saveContinue}
             </button>
           </div>
         </form>

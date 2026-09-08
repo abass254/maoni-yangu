@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { SurveyEditor } from "@/components/SurveyEditor";
-import { api, type Question, type Survey } from "@/lib/api";
+import { api, type Question, type Survey, type SurveyLanguage } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
 export default function EditSurveyPage() {
@@ -16,6 +16,7 @@ export default function EditSurveyPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [collectLocation, setCollectLocation] = useState(true);
+  const [language, setLanguage] = useState<SurveyLanguage>("en");
   const [questions, setQuestions] = useState<Question[]>([]);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -34,6 +35,7 @@ export default function EditSurveyPage() {
         setTitle(s.title);
         setDescription(s.description);
         setCollectLocation(s.collect_location);
+        setLanguage(s.language === "so" ? "so" : "en");
         setQuestions(
           s.questions.map((q, i) => ({
             prompt: q.prompt,
@@ -45,12 +47,16 @@ export default function EditSurveyPage() {
         );
       })
       .catch((err) =>
-        setError(err instanceof Error ? err.message : "Waa lagu fashilmay soo raridda")
+        setError(err instanceof Error ? err.message : "Failed to load survey")
       );
   }, [token, loading, router, surveyId]);
 
   async function save(extra?: { status?: "draft" | "published" }) {
     if (!token || !survey) return;
+    if (extra?.status === "published" && !language) {
+      setError("Select a question language before publishing.");
+      return;
+    }
     setBusy(true);
     setError("");
     setMessage("");
@@ -59,13 +65,27 @@ export default function EditSurveyPage() {
         title: title.trim(),
         description: description.trim(),
         collect_location: collectLocation,
+        language,
         questions: questions.map((q, i) => ({ ...q, position: i })),
         ...extra,
       });
       setSurvey(updated);
-      setMessage(extra?.status === "published" ? "Waa la daabacay." : "Waa la kaydiyay.");
+      setLanguage(updated.language === "so" ? "so" : "en");
+      setQuestions(
+        updated.questions.map((q, i) => ({
+          prompt: q.prompt,
+          question_type: q.question_type,
+          options: q.options || [],
+          required: q.required,
+          position: q.position ?? i,
+        }))
+      );
+      setTitle(updated.title);
+      setDescription(updated.description);
+      setCollectLocation(updated.collect_location);
+      setMessage(extra?.status === "published" ? "Published." : "Saved.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Kaydintu way fashilantay");
+      setError(err instanceof Error ? err.message : "Save failed");
     } finally {
       setBusy(false);
     }
@@ -73,13 +93,13 @@ export default function EditSurveyPage() {
 
   async function remove() {
     if (!token || !survey) return;
-    if (!confirm("Ma tirtiraysaa sahankan iyo dhammaan jawaabaha?")) return;
+    if (!confirm("Delete this survey and all of its responses?")) return;
     await api.deleteSurvey(token, survey.id);
     router.push("/dashboard");
   }
 
   if (!survey && !error) {
-    return <p style={{ color: "var(--muted)" }}>Sahanka waa la soo rarayaa…</p>;
+    return <p style={{ color: "var(--muted)" }}>Loading survey…</p>;
   }
 
   if (error && !survey) {
@@ -93,17 +113,17 @@ export default function EditSurveyPage() {
       ? `${window.location.origin}/s/${survey.public_id}`
       : `/s/${survey.public_id}`;
 
-  const statusLabel = survey.status === "published" ? "la daabacay" : "qabyo";
+  const statusLabel = survey.status === "published" ? "published" : "draft";
 
   return (
     <div style={{ display: "grid", gap: "1.25rem" }}>
       <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
         <div>
           <h1 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: "2rem" }}>
-            Wax ka beddel sahanka
+            Edit survey
           </h1>
           <p style={{ margin: "0.35rem 0 0", color: "var(--muted)" }}>
-            Xaaladda:{" "}
+            Status:{" "}
             <span style={{ color: survey.status === "published" ? "var(--accent)" : "var(--warn)" }}>
               {statusLabel}
             </span>
@@ -111,11 +131,11 @@ export default function EditSurveyPage() {
         </div>
         <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
           <Link href={`/surveys/${survey.id}/results`} style={chip}>
-            Natiijooyinka
+            Results
           </Link>
           {survey.status === "published" && (
             <Link href={`/s/${survey.public_id}`} style={chip} target="_blank">
-              Horudhac
+              Preview
             </Link>
           )}
         </div>
@@ -132,17 +152,47 @@ export default function EditSurveyPage() {
             gap: "0.4rem",
           }}
         >
-          <strong>Xiriiriyaha wadaagista</strong>
+          <strong>Share link</strong>
           <code style={{ wordBreak: "break-all", color: "var(--accent)" }}>{shareUrl}</code>
           <button
             type="button"
             onClick={() => navigator.clipboard.writeText(shareUrl)}
             style={chipBtn}
           >
-            Koobi garee xiriiriyaha
+            Copy link
           </button>
         </div>
       )}
+
+      <label
+        style={{
+          display: "grid",
+          gap: "0.4rem",
+          fontSize: "0.92rem",
+          color: "var(--muted)",
+        }}
+      >
+        Question language
+        <select
+          value={language}
+          onChange={(e) => setLanguage(e.target.value as SurveyLanguage)}
+          style={{
+            width: "100%",
+            maxWidth: 280,
+            borderRadius: 10,
+            border: "1px solid var(--line)",
+            background: "rgba(0,0,0,0.25)",
+            color: "var(--ink)",
+            padding: "0.7rem 0.85rem",
+          }}
+        >
+          <option value="en">English</option>
+          <option value="so">Somali</option>
+        </select>
+        <span style={{ fontSize: "0.85rem", color: "var(--muted)" }}>
+          For refugee visa templates, changing language updates all questions.
+        </span>
+      </label>
 
       <SurveyEditor
         title={title}
@@ -162,7 +212,7 @@ export default function EditSurveyPage() {
 
       <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
         <button type="button" disabled={busy} onClick={() => save()} style={secondary}>
-          Kaydi isbeddelada
+          Save changes
         </button>
         {survey.status !== "published" ? (
           <button
@@ -171,7 +221,7 @@ export default function EditSurveyPage() {
             onClick={() => save({ status: "published" })}
             style={primary}
           >
-            Daabac
+            Publish
           </button>
         ) : (
           <button
@@ -180,11 +230,11 @@ export default function EditSurveyPage() {
             onClick={() => save({ status: "draft" })}
             style={secondary}
           >
-            Ka noqo daabacaadda
+            Unpublish
           </button>
         )}
         <button type="button" onClick={remove} style={{ ...secondary, color: "var(--danger)" }}>
-          Tirtir
+          Delete
         </button>
       </div>
     </div>

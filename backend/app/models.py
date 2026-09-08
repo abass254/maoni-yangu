@@ -42,6 +42,7 @@ class Survey(Base):
     description: Mapped[str] = mapped_column(Text, default="")
     status: Mapped[str] = mapped_column(String(32), default="draft")  # draft | published
     collect_location: Mapped[bool] = mapped_column(default=True)
+    language: Mapped[str] = mapped_column(String(8), default="en")  # en | so
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, onupdate=utcnow

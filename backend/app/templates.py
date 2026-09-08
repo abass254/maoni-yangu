@@ -20,6 +20,7 @@ def _create_survey_from_questions(
     description: str,
     questions: list[dict],
     collect_location: bool = True,
+    language: str = "en",
 ) -> Survey:
     survey = Survey(
         public_id=_new_public_id(),
@@ -27,6 +28,7 @@ def _create_survey_from_questions(
         title=title,
         description=description,
         collect_location=collect_location,
+        language="so" if language == "so" else "en",
         status="draft",
     )
     db.add(survey)
@@ -248,304 +250,22 @@ KENYA_ELECTIONS_QUESTIONS: list[dict] = [
 ]
 
 
-# Intake forms for case workers helping applicants prepare refugee /
-# humanitarian pathways. Not official government forms and not legal advice.
 
-
-def _refugee_visa_questions(
-    country: str,
-    *,
-    pathways: list[str],
-) -> list[dict]:
-    return [
-        {
-            "prompt": "Magacaaga buuxa (sida uu ku qoran yahay dukumeentigaaga)",
-            "question_type": "text",
-            "options": [],
-            "required": True,
-        },
-        {
-            "prompt": "Taariikhda dhalashada (QQ/BB/SSSS)",
-            "question_type": "text",
-            "options": [],
-            "required": True,
-        },
-        {
-            "prompt": "Jinsiga",
-            "question_type": "multiple_choice",
-            "options": ["Lab", "Dhedig", "Waxaan doorbidayaa inaan sheegin"],
-            "required": True,
-        },
-        {
-            "prompt": "Waddanka aad ku dhalatay",
-            "question_type": "text",
-            "options": [],
-            "required": True,
-        },
-        {
-            "prompt": "Jinsiyadda(ha) aad haysato",
-            "question_type": "text",
-            "options": [],
-            "required": True,
-        },
-        {
-            "prompt": "Xaaladdaaga qoyska",
-            "question_type": "multiple_choice",
-            "options": [
-                "Celin",
-                "Guursaday / Guursatay",
-                "Wada noolaan (common-law)",
-                "Kala tagay",
-                "Carmaalka / Carmalka",
-                "Waxaan doorbidayaa inaan sheegin",
-            ],
-            "required": True,
-        },
-        {
-            "prompt": "Tirada xubnaha qoyska ee kula soconaya ama ku tiirsan",
-            "question_type": "multiple_choice",
-            "options": ["Keliya aniga", "1–2", "3–4", "5 ama ka badan"],
-            "required": True,
-        },
-        {
-            "prompt": "Magacyada iyo da'da xubnaha qoyska ee ku tiirsan (haddii ay jiraan)",
-            "question_type": "text",
-            "options": [],
-            "required": False,
-        },
-        {
-            "prompt": "Hadda meeshee ku nooshahay? (waddan + magaalada / xerada)",
-            "question_type": "text",
-            "options": [],
-            "required": True,
-        },
-        {
-            "prompt": "Xaaladdaada hadda ee degenaanshaha",
-            "question_type": "multiple_choice",
-            "options": [
-                "Xero qaxooti / UNHCR",
-                "Magaalo — sharciga deganaanshaha waan hayaa",
-                "Magaalo — sharciga deganaanshaha ma hayaa",
-                "Xabsiga socdaalka / haynta",
-                "Meel kale",
-            ],
-            "required": True,
-        },
-        {
-            "prompt": "Ma haysaa diiwaangelin UNHCR ama hay'ad qaxooti oo la mid ah?",
-            "question_type": "multiple_choice",
-            "options": ["Haa", "Maya", "Ma hubo", "Codsi ayaa socda"],
-            "required": True,
-        },
-        {
-            "prompt": "Lambarka diiwaangelinta UNHCR / case number (haddii aad haysato)",
-            "question_type": "text",
-            "options": [],
-            "required": False,
-        },
-        {
-            "prompt": "Maxaa ugu weyn ee kaa dhigay inaad raadsato ilaalin / qaxootinimo?",
-            "question_type": "multiple_choice",
-            "options": [
-                "Cadaadis siyaasadeed",
-                "Dagaal / colaad",
-                "Cabudhin diineed",
-                "Cadaadis jinsi / jinsiyeed",
-                "Cadaadis koox / qabiil",
-                "Cadaadis ku salaysan ra'yi",
-                "Khalad shaqsiyeed / khatar gaar ah",
-                "Wax kale",
-            ],
-            "required": True,
-        },
-        {
-            "prompt": f"Si kooban u qor sababta aad uga baahan tahay ilaalin {country}",
-            "question_type": "text",
-            "options": [],
-            "required": True,
-        },
-        {
-            "prompt": "Ma ku soo noqon kartaa waddankaaga ammaan?",
-            "question_type": "multiple_choice",
-            "options": ["Maya", "Haa", "Ma hubo"],
-            "required": True,
-        },
-        {
-            "prompt": "Haddii aysan suurtagal ahayn, maxaa khatar ah?",
-            "question_type": "text",
-            "options": [],
-            "required": False,
-        },
-        {
-            "prompt": "Ma haysaa baasaboor ama dukumeenti aqoonsi?",
-            "question_type": "multiple_choice",
-            "options": [
-                "Baasaboor shaqeynaya",
-                "Baasaboor dhacay",
-                "Kaadh aqoonsi / ID kale",
-                "Wax dukumeenti ah ma haysto",
-            ],
-            "required": True,
-        },
-        {
-            "prompt": "Ma hore u codsatay fiiso / ilaalin waddan kale?",
-            "question_type": "multiple_choice",
-            "options": [
-                "Maya",
-                "Haa — waa la aqbalay",
-                "Haa — waa la diiday",
-                "Haa — weli socota",
-            ],
-            "required": True,
-        },
-        {
-            "prompt": "Haddii haa, sheeg waddanka iyo natiijada",
-            "question_type": "text",
-            "options": [],
-            "required": False,
-        },
-        {
-            "prompt": "Nooca caawimada aad raadinayso",
-            "question_type": "multiple_choice",
-            "options": pathways,
-            "required": True,
-        },
-        {
-            "prompt": "Heerka degdegga / khatarta hadda",
-            "question_type": "rating",
-            "options": ["1", "2", "3", "4", "5"],
-            "required": True,
-        },
-        {
-            "prompt": "Telefoon ama WhatsApp aad kaga soo xiriiri karto",
-            "question_type": "text",
-            "options": [],
-            "required": True,
-        },
-        {
-            "prompt": "Iimayl (haddii aad haysato)",
-            "question_type": "text",
-            "options": [],
-            "required": False,
-        },
-        {
-            "prompt": "Luqadaha aad ku hadasho",
-            "question_type": "text",
-            "options": [],
-            "required": True,
-        },
-        {
-            "prompt": "Ma u baahan tahay turjubaan marka la kula hadlayo?",
-            "question_type": "multiple_choice",
-            "options": ["Haa", "Maya", "Mararka qaarkood"],
-            "required": True,
-        },
-        {
-            "prompt": "Wax kale oo muhiim ah oo aad rabto inaad la wadaagto kooxda kiiska",
-            "question_type": "text",
-            "options": [],
-            "required": False,
-        },
-    ]
-
-
-CANADA_REFUGEE_VISA_QUESTIONS = _refugee_visa_questions(
-    "Kanada",
-    pathways=[
-        "Ilaalin qaxooti (refugee protection)",
-        "Is-dejin qoys / sponsor qoys",
-        "Is-dejin hay'ad / private sponsorship",
-        "Fiiso bini'aadantinimo / urgent protection",
-        "Ma hubo — waxaan rabaa hagid",
-    ],
+from .i18n_refugee import (
+    get_refugee_pack,
+    is_refugee_wizard_survey,
+    refugee_key_from_title,
+    refugee_wizard_sections,
 )
-
-GERMANY_REFUGEE_VISA_QUESTIONS = _refugee_visa_questions(
-    "Jarmalka",
-    pathways=[
-        "Asyl / ilaalin qaxooti (BAMF)",
-        "Is-dejin (resettlement)",
-        "Is-dejin qoys / family reunification",
-        "Fiiso bini'aadantinimo / urgent protection",
-        "Ma hubo — waxaan rabaa hagid",
-    ],
-)
-
-UK_REFUGEE_VISA_QUESTIONS = _refugee_visa_questions(
-    "Boqortooyada Midowday (UK)",
-    pathways=[
-        "Asylum / ilaalin qaxooti (Home Office)",
-        "UK Resettlement Scheme",
-        "Is-dejin qoys / family reunion",
-        "Fiiso bini'aadantinimo / urgent protection",
-        "Ma hubo — waxaan rabaa hagid",
-    ],
-)
-
-AUSTRALIA_REFUGEE_VISA_QUESTIONS = _refugee_visa_questions(
-    "Australia",
-    pathways=[
-        "Refugee / humanitarian visa (Home Affairs)",
-        "Is-dejin (resettlement)",
-        "Is-dejin qoys / family sponsorship",
-        "Fiiso bini'aadantinimo / urgent protection",
-        "Ma hubo — waxaan rabaa hagid",
-    ],
-)
-
 
 DEFAULT_TEMPLATE_TITLES = {
     "job-application": "Job Application",
     "kenya-elections": "Kenya Elections Opinion Survey",
-    "canada-refugee-visa": "Codsiga Fiisaha Qaxootiga — Kanada",
-    "germany-refugee-visa": "Codsiga Fiisaha Qaxootiga — Jarmalka",
-    "uk-refugee-visa": "Codsiga Fiisaha Qaxootiga — UK",
-    "australia-refugee-visa": "Codsiga Fiisaha Qaxootiga — Australia",
+    "canada-refugee-visa": get_refugee_pack("canada", "en")["title"],
+    "germany-refugee-visa": get_refugee_pack("germany", "en")["title"],
+    "uk-refugee-visa": get_refugee_pack("uk", "en")["title"],
+    "australia-refugee-visa": get_refugee_pack("australia", "en")["title"],
 }
-
-REFUGEE_TEMPLATE_TITLES = {
-    DEFAULT_TEMPLATE_TITLES["canada-refugee-visa"],
-    DEFAULT_TEMPLATE_TITLES["germany-refugee-visa"],
-    DEFAULT_TEMPLATE_TITLES["uk-refugee-visa"],
-    DEFAULT_TEMPLATE_TITLES["australia-refugee-visa"],
-}
-
-# Position ranges (inclusive) for the shared refugee intake question list.
-REFUGEE_WIZARD_SECTIONS: list[tuple[str, str, range]] = [
-    ("bio", "1. Macluumaadka shakhsiyeed", range(0, 8)),
-    ("situation", "2. Xaaladdaada hadda", range(8, 12)),
-    ("protection", "3. Sababta ilaalinta", range(12, 16)),
-    ("documents", "4. Dukumeentiyada iyo taariikhda", range(16, 19)),
-    ("support", "5. Caawimada iyo xiriirka", range(19, 26)),
-]
-
-
-def is_refugee_wizard_survey(title: str) -> bool:
-    return title in REFUGEE_TEMPLATE_TITLES or title.startswith(
-        "Codsiga Fiisaha Qaxootiga"
-    )
-
-
-def refugee_wizard_sections(questions: list) -> list[dict]:
-    """Build wizard sections from ordered survey questions."""
-    ordered = sorted(questions, key=lambda q: q.position)
-    sections: list[dict] = []
-    for section_id, title, positions in REFUGEE_WIZARD_SECTIONS:
-        ids = [ordered[i].id for i in positions if i < len(ordered)]
-        if ids:
-            sections.append({"id": section_id, "title": title, "question_ids": ids})
-    # Any leftover questions go into a final "other" section
-    covered = {qid for s in sections for qid in s["question_ids"]}
-    leftover = [q.id for q in ordered if q.id not in covered]
-    if leftover:
-        sections.append(
-            {
-                "id": "extra",
-                "title": f"{len(sections) + 1}. Su'aalo kale",
-                "question_ids": leftover,
-            }
-        )
-    return sections
 
 
 def create_default_job_application_survey(db: Session, user: User) -> Survey:
@@ -559,6 +279,7 @@ def create_default_job_application_survey(db: Session, user: User) -> Survey:
         ),
         questions=JOB_APPLICATION_QUESTIONS,
         collect_location=True,
+        language="en",
     )
 
 
@@ -575,74 +296,67 @@ def create_kenya_elections_survey(db: Session, user: User) -> Survey:
         ),
         questions=KENYA_ELECTIONS_QUESTIONS,
         collect_location=True,
+        language="en",
     )
 
 
-def _create_refugee_visa_survey(
-    db: Session,
-    user: User,
-    *,
-    title: str,
-    country: str,
-    agency: str,
-    questions: list[dict],
-) -> Survey:
+def _create_refugee_visa_survey(db: Session, user: User, key: str, lang: str = "en") -> Survey:
+    pack = get_refugee_pack(key, "so" if lang == "so" else "en")
     return _create_survey_from_questions(
         db,
         user,
-        title=title,
-        description=(
-            f"Foomka horudhaca ee ururinta macluumaadka dadka raadsanaya ilaalin "
-            f"qaxooti / fiiso bini'aadantinimo {country}. Goobta waa in la daaraa ka hor "
-            f"intaadan buuxin. Kani ma aha foomka rasmiga ah ee {agency}, mana aha talo sharci."
-        ),
-        questions=questions,
+        title=pack["title"],
+        description=pack["description"],
+        questions=pack["questions"],
         collect_location=True,
+        language=pack["language"],
     )
 
 
 def create_canada_refugee_visa_survey(db: Session, user: User) -> Survey:
-    return _create_refugee_visa_survey(
-        db,
-        user,
-        title=DEFAULT_TEMPLATE_TITLES["canada-refugee-visa"],
-        country="Kanada",
-        agency="IRCC",
-        questions=CANADA_REFUGEE_VISA_QUESTIONS,
-    )
+    return _create_refugee_visa_survey(db, user, "canada")
 
 
 def create_germany_refugee_visa_survey(db: Session, user: User) -> Survey:
-    return _create_refugee_visa_survey(
-        db,
-        user,
-        title=DEFAULT_TEMPLATE_TITLES["germany-refugee-visa"],
-        country="Jarmalka",
-        agency="BAMF",
-        questions=GERMANY_REFUGEE_VISA_QUESTIONS,
-    )
+    return _create_refugee_visa_survey(db, user, "germany")
 
 
 def create_uk_refugee_visa_survey(db: Session, user: User) -> Survey:
-    return _create_refugee_visa_survey(
-        db,
-        user,
-        title=DEFAULT_TEMPLATE_TITLES["uk-refugee-visa"],
-        country="Boqortooyada Midowday (UK)",
-        agency="UKVI / Home Office",
-        questions=UK_REFUGEE_VISA_QUESTIONS,
-    )
+    return _create_refugee_visa_survey(db, user, "uk")
 
 
 def create_australia_refugee_visa_survey(db: Session, user: User) -> Survey:
-    return _create_refugee_visa_survey(
-        db,
-        user,
-        title=DEFAULT_TEMPLATE_TITLES["australia-refugee-visa"],
-        country="Australia",
-        agency="Home Affairs",
-        questions=AUSTRALIA_REFUGEE_VISA_QUESTIONS,
-    )
+    return _create_refugee_visa_survey(db, user, "australia")
+
+
+def apply_survey_language(db: Session, survey: Survey, language: str) -> bool:
+    """Switch question language for known bilingual templates.
+
+    Returns True if questions/title/description were rewritten from a language pack.
+    """
+    lang = "so" if language == "so" else "en"
+    key = refugee_key_from_title(survey.title)
+    survey.language = lang
+    if not key:
+        return False
+    pack = get_refugee_pack(key, lang)
+    survey.title = pack["title"]
+    survey.description = pack["description"]
+    for existing in list(survey.questions):
+        db.delete(existing)
+    db.flush()
+    for idx, q in enumerate(pack["questions"]):
+        survey.questions.append(
+            Question(
+                prompt=q["prompt"],
+                question_type=q["question_type"],
+                options_json=json.dumps(q["options"]),
+                required=q["required"],
+                position=idx,
+            )
+        )
+    db.flush()
+    return True
 
 
 def create_default_surveys_for_user(db: Session, user: User) -> list[Survey]:

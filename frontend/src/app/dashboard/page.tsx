@@ -9,10 +9,10 @@ import { useAuth } from "@/lib/auth";
 const DEFAULT_TEMPLATE_TITLES = new Set([
   "Job Application",
   "Kenya Elections Opinion Survey",
-  "Codsiga Fiisaha Qaxootiga — Kanada",
-  "Codsiga Fiisaha Qaxootiga — Jarmalka",
-  "Codsiga Fiisaha Qaxootiga — UK",
-  "Codsiga Fiisaha Qaxootiga — Australia",
+  "Refugee Visa Intake — Canada",
+  "Refugee Visa Intake — Germany",
+  "Refugee Visa Intake — UK",
+  "Refugee Visa Intake — Australia",
 ]);
 
 const REFUGEE_TEMPLATES: {
@@ -21,29 +21,29 @@ const REFUGEE_TEMPLATES: {
   create: (token: string) => Promise<Survey>;
 }[] = [
   {
-    title: "Codsiga Fiisaha Qaxootiga — Kanada",
-    label: "Kanada",
+    title: "Refugee Visa Intake — Canada",
+    label: "Canada",
     create: (token) => api.createCanadaRefugeeVisaTemplate(token),
   },
   {
-    title: "Codsiga Fiisaha Qaxootiga — Jarmalka",
-    label: "Jarmalka",
+    title: "Refugee Visa Intake — Germany",
+    label: "Germany",
     create: (token) => api.createGermanyRefugeeVisaTemplate(token),
   },
   {
-    title: "Codsiga Fiisaha Qaxootiga — UK",
+    title: "Refugee Visa Intake — UK",
     label: "UK",
     create: (token) => api.createUkRefugeeVisaTemplate(token),
   },
   {
-    title: "Codsiga Fiisaha Qaxootiga — Australia",
+    title: "Refugee Visa Intake — Australia",
     label: "Australia",
     create: (token) => api.createAustraliaRefugeeVisaTemplate(token),
   },
 ];
 
 function statusLabel(status: SurveyStatus) {
-  return status === "published" ? "la daabacay" : "qabyo";
+  return status === "published" ? "published" : "draft";
 }
 
 export default function DashboardPage() {
@@ -65,7 +65,7 @@ export default function DashboardPage() {
       .listSurveys(token)
       .then(setSurveys)
       .catch((err) =>
-        setError(err instanceof Error ? err.message : "Waa lagu fashilmay soo raridda")
+        setError(err instanceof Error ? err.message : "Failed to load surveys")
       )
       .finally(() => setBusy(false));
   }, [token, loading, router]);
@@ -85,6 +85,7 @@ export default function DashboardPage() {
           description: survey.description,
           status: survey.status,
           collect_location: survey.collect_location,
+          language: survey.language,
           created_at: survey.created_at,
           updated_at: survey.updated_at,
           question_count: survey.questions.length,
@@ -105,7 +106,7 @@ export default function DashboardPage() {
       router.push(`/surveys/${survey.id}/edit`);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Waa lagu fashilmay ku darista qaabka doorashada"
+        err instanceof Error ? err.message : "Failed to add elections template"
       );
     } finally {
       setAddingElections(false);
@@ -124,7 +125,7 @@ export default function DashboardPage() {
       setError(
         err instanceof Error
           ? err.message
-          : "Waa lagu fashilmay ku darista qaabka fiisaha qaxootiga"
+          : "Failed to add refugee visa template"
       );
     } finally {
       setAddingRefugeeKey(null);
@@ -132,7 +133,7 @@ export default function DashboardPage() {
   }
 
   if (loading || busy) {
-    return <p style={{ color: "var(--muted)" }}>Sahannada waa la soo rarayaa…</p>;
+    return <p style={{ color: "var(--muted)" }}>Loading surveys…</p>;
   }
 
   const missingRefugee = REFUGEE_TEMPLATES.filter(
@@ -144,11 +145,11 @@ export default function DashboardPage() {
       <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
         <div>
           <h1 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: "2rem" }}>
-            Sahannadaada
+            Your surveys
           </h1>
           <p style={{ margin: "0.35rem 0 0", color: "var(--muted)" }}>
-            Akoonnada cusub waxay helayaan qaababka shaqada, doorashada, iyo fiisaha
-            qaxootiga (Kanada, Jarmalka, UK, Australia) — wax ka beddel, daabac, oo wadaag.
+            New accounts get job, elections, and refugee visa templates (Canada,
+            Germany, UK, Australia) — edit, publish, and share.
           </p>
         </div>
         <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignSelf: "start" }}>
@@ -159,7 +160,7 @@ export default function DashboardPage() {
               disabled={addingElections}
               style={secondaryBtn}
             >
-              {addingElections ? "Waa lagu darayaa…" : "Ku dar qaabka Kenya Elections"}
+              {addingElections ? "Adding…" : "Add Kenya Elections template"}
             </button>
           )}
           {missingRefugee.map((t) => (
@@ -171,12 +172,12 @@ export default function DashboardPage() {
               style={secondaryBtn}
             >
               {addingRefugeeKey === t.title
-                ? "Waa lagu darayaa…"
-                : `Ku dar fiisaha qaxootiga (${t.label})`}
+                ? "Adding…"
+                : `Add refugee visa (${t.label})`}
             </button>
           ))}
           <Link href="/surveys/new" style={primaryLink}>
-            Sahan cusub
+            New survey
           </Link>
         </div>
       </div>
@@ -192,7 +193,7 @@ export default function DashboardPage() {
             color: "var(--muted)",
           }}
         >
-          Weli ma jiraan sahanno. Samee mid si aad u hesho xiriiriye la wadaagi karo.
+          No surveys yet. Create one to get a shareable link.
         </div>
       ) : (
         <div style={{ display: "grid", gap: "0.85rem" }}>
@@ -212,8 +213,8 @@ export default function DashboardPage() {
                 <div>
                   <h2 style={{ margin: 0, fontSize: "1.2rem" }}>{s.title}</h2>
                   <p style={{ margin: "0.3rem 0 0", color: "var(--muted)", fontSize: "0.92rem" }}>
-                    {DEFAULT_TEMPLATE_TITLES.has(s.title) ? "Qaabka caadiga ah · " : ""}
-                    {s.question_count} su&apos;aalo · {s.response_count} jawaabo ·{" "}
+                    {DEFAULT_TEMPLATE_TITLES.has(s.title) ? "Default template · " : ""}
+                    {s.question_count} questions · {s.response_count} responses ·{" "}
                     <span style={{ color: s.status === "published" ? "var(--accent)" : "var(--warn)" }}>
                       {statusLabel(s.status)}
                     </span>
@@ -221,14 +222,14 @@ export default function DashboardPage() {
                 </div>
                 <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                   <Link href={`/surveys/${s.id}/edit`} style={chip}>
-                    Wax ka beddel
+                    Edit
                   </Link>
                   <Link href={`/surveys/${s.id}/results`} style={chip}>
-                    Natiijooyinka
+                    Results
                   </Link>
                   {s.status === "published" && (
                     <Link href={`/s/${s.public_id}`} style={chip} target="_blank">
-                      Fur xiriiriyaha
+                      Open link
                     </Link>
                   )}
                 </div>
