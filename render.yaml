@@ -1,14 +1,12 @@
-# Render Blueprint — use when this `survey/` folder is the Git repo root.
-# If you deploy from the parent `dukai_merchant` monorepo instead, skip this
-# file and set Root Directory to `survey/backend` in the Render dashboard.
+# Deploy: Render → New → Blueprint → connect abass254/maoni-yangu
+# Or: New Web Service with Root Directory LEFT BLANK (commands cd into backend).
 services:
   - type: web
     name: maoni-yangu-api
     runtime: python
     plan: free
-    rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --app-dir backend
     healthCheckPath: /api/health
     envVars:
       - key: SURVEY_SECRET_KEY

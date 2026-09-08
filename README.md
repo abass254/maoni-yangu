@@ -33,23 +33,20 @@ Optional: set `NEXT_PUBLIC_API_URL` if the API is not on `http://127.0.0.1:8200`
 
 ## Free deploy (Render + Vercel)
 
-Uses free tiers: API on Render (`*.onrender.com`), frontend on Vercel (`*.vercel.app`).
-
-### 0. Push the code
-
-Commit and push this `survey/` folder to GitHub (either as its own repo, or inside `dukai_merchant`).
+Repo: [abass254/maoni-yangu](https://github.com/abass254/maoni-yangu)  
+Free tiers: API on Render (`*.onrender.com`), frontend on Vercel (`*.vercel.app`).
 
 ### 1. Deploy the API on Render
 
-1. Go to [render.com](https://render.com) → **New** → **Web Service** → connect the GitHub repo.
-2. Settings:
+1. Go to [render.com](https://render.com) → **New** → **Web Service** → connect **`abass254/maoni-yangu`**.
+2. Settings (important — this repo already has `backend/` at the top level):
 
 | Field | Value |
 |--------|--------|
-| **Root Directory** | `backend` if this folder is the repo root; `survey/backend` if the repo is `dukai_merchant` |
+| **Root Directory** | **leave blank** (do **not** use `survey/backend` or `backend`) |
 | **Runtime** | Python 3 |
-| **Build Command** | `pip install -r requirements.txt` |
-| **Start Command** | `uvicorn app.main:app --host 0.0.0.0 --port $PORT` |
+| **Build Command** | `pip install -r backend/requirements.txt` |
+| **Start Command** | `uvicorn app.main:app --host 0.0.0.0 --port $PORT --app-dir backend` |
 | **Instance type** | Free |
 
 3. Environment variables (Render → Environment):
@@ -58,18 +55,19 @@ Commit and push this `survey/` folder to GitHub (either as its own repo, or insi
 |-----|--------|
 | `SURVEY_SECRET_KEY` | any long random string (or leave blank and use Render’s generate) |
 | `CORS_ORIGINS` | leave empty for now — set after Vercel gives you a URL |
+| `PYTHON_VERSION` | `3.12.8` (optional) |
 
-4. Create the service. Copy the API URL, e.g. `https://maoni-yangu-api.onrender.com`.
+4. Create / **Manual Deploy**. Copy the API URL, e.g. `https://maoni-yangu-api.onrender.com`.
 5. Check health: open `https://YOUR-API.onrender.com/api/health` — should return `{"ok":true}` (first load may take ~30–60s on free tier).
 
 ### 2. Deploy the frontend on Vercel
 
-1. Go to [vercel.com](https://vercel.com) → **Add New Project** → import the same GitHub repo.
+1. Go to [vercel.com](https://vercel.com) → **Add New Project** → import **`abass254/maoni-yangu`**.
 2. Settings:
 
 | Field | Value |
 |--------|--------|
-| **Root Directory** | `frontend` if this folder is the repo root; `survey/frontend` if the repo is `dukai_merchant` |
+| **Root Directory** | `frontend` |
 | **Framework** | Next.js |
 
 3. Environment variable:
