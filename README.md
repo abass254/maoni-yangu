@@ -5,7 +5,7 @@ Standalone survey product in `survey/`: design surveys, collect responses, and o
 ## Stack
 
 - **Frontend:** Next.js (App Router) + TypeScript + Tailwind — port `7200`
-- **Backend:** FastAPI + SQLAlchemy + SQLite — port `8200`
+- **Backend:** FastAPI + SQLAlchemy + MySQL (or local SQLite) — port `8200`
 - **Maps:** Leaflet + OpenStreetMap tiles on the results page
 
 ## Quick start
@@ -88,7 +88,8 @@ Free tiers: API on Render (`*.onrender.com`), frontend on Vercel (`*.vercel.app`
 ### Notes
 
 - Free Render services **sleep** after idle time; the first request after sleep can be slow.
-- SQLite on Render’s free disk is **ephemeral** — redeploys can wipe survey data. Fine for demos.
+- Set `DATABASE_URL` on Render to your MySQL URL, e.g. `mysql://user:pass@host:3306/survey` (persists across deploys). Without it the API falls back to ephemeral SQLite.
+- SQLite (local fallback only) is wiped when the file is deleted; prefer MySQL for production.
 - GPS/location needs HTTPS (both Vercel and Render provide it).
 
 ## Features
