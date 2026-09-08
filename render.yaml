@@ -1,0 +1,18 @@
+# Render Blueprint — use when this `survey/` folder is the Git repo root.
+# If you deploy from the parent `dukai_merchant` monorepo instead, skip this
+# file and set Root Directory to `survey/backend` in the Render dashboard.
+services:
+  - type: web
+    name: maoni-yangu-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: SURVEY_SECRET_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        sync: false
+        # Set after Vercel deploy, e.g. https://your-app.vercel.app

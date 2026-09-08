@@ -1,0 +1,309 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+:root {
+  --bg: #0f1c1a;
+  --bg-elevated: #162825;
+  --bg-card: #1a322e;
+  --ink: #f2f7f5;
+  --muted: #9bb5ae;
+  --accent: #2dd4a8;
+  --accent-deep: #0d9f78;
+  --warn: #f0b429;
+  --danger: #ef6b6b;
+  --line: rgba(155, 181, 174, 0.22);
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "DM Sans", system-ui, sans-serif;
+}
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
+  --font-sans: var(--font-body);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-body);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(45, 212, 168, 0.18), transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, rgba(240, 180, 41, 0.12), transparent 50%),
+    linear-gradient(165deg, #0c1614 0%, #12221f 45%, #0f1c1a 100%);
+  background-attachment: fixed;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.leaflet-container {
+  font-family: var(--font-body);
+  border-radius: 12px;
+  z-index: 0;
+}
+
+.results-split {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 760px) {
+  .results-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Public respond form — prioritized for easy reading & filling */
+.respond-page {
+  --respond-ink: #15201d;
+  --respond-muted: #4d635c;
+  --respond-line: #d5e0dc;
+  --respond-surface: #ffffff;
+  --respond-field: #f4f8f6;
+  --respond-focus: #0d9f78;
+  max-width: 40rem;
+  margin: 0.5rem auto 3rem;
+  font-family: var(--font-body);
+  font-size: 1.125rem;
+  line-height: 1.55;
+  color: var(--respond-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+.respond-page .respond-card {
+  background: var(--respond-surface);
+  color: var(--respond-ink);
+  border-radius: 1.25rem;
+  padding: 1.5rem 1.35rem 1.75rem;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+}
+
+.respond-page .respond-brand {
+  margin: 0 0 0.35rem;
+  color: var(--accent-deep);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.respond-page .respond-title {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: clamp(1.6rem, 4vw, 2rem);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  color: var(--respond-ink);
+}
+
+.respond-page .respond-desc {
+  margin: 0.65rem 0 0;
+  color: var(--respond-muted);
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+
+.respond-page .respond-step {
+  margin-top: 1.25rem;
+  padding: 1.1rem 1.15rem;
+  border-radius: 1rem;
+  border: 1px solid var(--respond-line);
+  background: #eef8f4;
+}
+
+.respond-page .respond-step.is-ready {
+  border-color: #9ad9c4;
+  background: #e5f7ef;
+}
+
+.respond-page .respond-step-title {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--respond-ink);
+}
+
+.respond-page .respond-step-help,
+.respond-page .respond-hint {
+  color: var(--respond-muted);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.respond-page .respond-form {
+  display: grid;
+  gap: 1.15rem;
+  margin-top: 1.25rem;
+}
+
+.respond-page .respond-question {
+  margin: 0;
+  border: 1px solid var(--respond-line);
+  border-radius: 1rem;
+  padding: 1rem 1.05rem 1.15rem;
+  background: #fbfcfb;
+}
+
+.respond-page .respond-question legend {
+  padding: 0 0.25rem;
+  font-size: 1.12rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--respond-ink);
+}
+
+.respond-page .respond-input,
+.respond-page .respond-textarea {
+  width: 100%;
+  margin-top: 0.65rem;
+  border-radius: 0.75rem;
+  border: 1.5px solid var(--respond-line);
+  background: var(--respond-field);
+  color: var(--respond-ink);
+  padding: 0.9rem 1rem;
+  font-size: 1.1rem;
+  line-height: 1.45;
+  font-family: inherit;
+}
+
+.respond-page .respond-textarea {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+.respond-page .respond-input:focus,
+.respond-page .respond-textarea:focus {
+  outline: 3px solid rgba(13, 159, 120, 0.28);
+  border-color: var(--respond-focus);
+  background: #fff;
+}
+
+.respond-page .respond-options {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+}
+
+.respond-page .respond-option {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.85rem 0.95rem;
+  border-radius: 0.85rem;
+  border: 1.5px solid var(--respond-line);
+  background: #fff;
+  font-size: 1.08rem;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.respond-page .respond-option:has(input:checked) {
+  border-color: var(--respond-focus);
+  background: #e8f7f1;
+}
+
+.respond-page .respond-option input {
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+  accent-color: var(--respond-focus);
+}
+
+.respond-page .respond-rating {
+  display: flex;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+.respond-page .respond-rating button {
+  min-width: 3rem;
+  min-height: 3rem;
+  border-radius: 0.75rem;
+  border: 1.5px solid var(--respond-line);
+  background: #fff;
+  color: var(--respond-ink);
+  font-size: 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.respond-page .respond-rating button.is-selected {
+  background: var(--accent);
+  border-color: var(--accent-deep);
+  color: #06261d;
+}
+
+.respond-page .respond-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 1rem 1.35rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.respond-page .respond-btn-primary {
+  background: var(--accent);
+  color: #06261d;
+}
+
+.respond-page .respond-btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.respond-page .respond-error {
+  margin: 0;
+  color: #b42318;
+  font-size: 1.02rem;
+  font-weight: 600;
+}
+
+.respond-page .respond-success-title {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-body);
+  font-size: clamp(1.8rem, 5vw, 2.3rem);
+  font-weight: 700;
+  color: var(--respond-ink);
+}
+
+.respond-page .respond-success-text {
+  margin: 0;
+  color: var(--respond-muted);
+  font-size: 1.1rem;
+}
+
+@media (max-width: 520px) {
+  .respond-page .respond-card {
+    padding: 1.25rem 1rem 1.5rem;
+    border-radius: 1rem;
+  }
+
+  .respond-page {
+    font-size: 1.05rem;
+  }
+}
