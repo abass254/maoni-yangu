@@ -9,7 +9,10 @@ import { useAuth } from "@/lib/auth";
 const DEFAULT_TEMPLATE_TITLES = new Set([
   "Job Application",
   "Kenya Elections Opinion Survey",
+  "Codsiga Fiisaha Qaxootiga — Kanada",
 ]);
+
+const CANADA_REFUGEE_TITLE = "Codsiga Fiisaha Qaxootiga — Kanada";
 
 function statusLabel(status: SurveyStatus) {
   return status === "published" ? "la daabacay" : "qabyo";
@@ -22,6 +25,7 @@ export default function DashboardPage() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(true);
   const [addingElections, setAddingElections] = useState(false);
+  const [addingRefugee, setAddingRefugee] = useState(false);
 
   useEffect(() => {
     if (loading) return;
@@ -41,6 +45,39 @@ export default function DashboardPage() {
   const hasElectionsTemplate = surveys.some(
     (s) => s.title === "Kenya Elections Opinion Survey"
   );
+  const hasRefugeeTemplate = surveys.some((s) => s.title === CANADA_REFUGEE_TITLE);
+
+  function prependSurvey(survey: {
+    id: number;
+    public_id: string;
+    title: string;
+    description: string;
+    status: SurveyStatus;
+    collect_location: boolean;
+    created_at: string;
+    updated_at: string;
+    questions: { length: number };
+    response_count: number;
+  }) {
+    setSurveys((prev) => {
+      if (prev.some((s) => s.id === survey.id)) return prev;
+      return [
+        {
+          id: survey.id,
+          public_id: survey.public_id,
+          title: survey.title,
+          description: survey.description,
+          status: survey.status,
+          collect_location: survey.collect_location,
+          created_at: survey.created_at,
+          updated_at: survey.updated_at,
+          question_count: survey.questions.length,
+          response_count: survey.response_count,
+        },
+        ...prev,
+      ];
+    });
+  }
 
   async function addElectionsTemplate() {
     if (!token) return;
@@ -48,24 +85,7 @@ export default function DashboardPage() {
     setError("");
     try {
       const survey = await api.createKenyaElectionsTemplate(token);
-      setSurveys((prev) => {
-        if (prev.some((s) => s.id === survey.id)) return prev;
-        return [
-          {
-            id: survey.id,
-            public_id: survey.public_id,
-            title: survey.title,
-            description: survey.description,
-            status: survey.status,
-            collect_location: survey.collect_location,
-            created_at: survey.created_at,
-            updated_at: survey.updated_at,
-            question_count: survey.questions.length,
-            response_count: survey.response_count,
-          },
-          ...prev,
-        ];
-      });
+      prependSurvey(survey);
       router.push(`/surveys/${survey.id}/edit`);
     } catch (err) {
       setError(
@@ -73,6 +93,25 @@ export default function DashboardPage() {
       );
     } finally {
       setAddingElections(false);
+    }
+  }
+
+  async function addRefugeeTemplate() {
+    if (!token) return;
+    setAddingRefugee(true);
+    setError("");
+    try {
+      const survey = await api.createCanadaRefugeeVisaTemplate(token);
+      prependSurvey(survey);
+      router.push(`/surveys/${survey.id}/edit`);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Waa lagu fashilmay ku darista qaabka fiisaha qaxootiga"
+      );
+    } finally {
+      setAddingRefugee(false);
     }
   }
 
@@ -88,8 +127,8 @@ export default function DashboardPage() {
             Sahannadaada
           </h1>
           <p style={{ margin: "0.35rem 0 0", color: "var(--muted)" }}>
-            Akoonnada cusub waxay helayaan qabyo Job Application iyo Kenya Elections —
-            wax ka beddel, daabac, oo wadaag.
+            Akoonnada cusub waxay helayaan qaababka shaqada, doorashada, iyo fiisaha
+            qaxootiga — wax ka beddel, daabac, oo wadaag.
           </p>
         </div>
         <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignSelf: "start" }}>
@@ -101,6 +140,16 @@ export default function DashboardPage() {
               style={secondaryBtn}
             >
               {addingElections ? "Waa lagu darayaa…" : "Ku dar qaabka Kenya Elections"}
+            </button>
+          )}
+          {!hasRefugeeTemplate && (
+            <button
+              type="button"
+              onClick={() => void addRefugeeTemplate()}
+              disabled={addingRefugee}
+              style={secondaryBtn}
+            >
+              {addingRefugee ? "Waa lagu darayaa…" : "Ku dar fiisaha qaxootiga (Kanada)"}
             </button>
           )}
           <Link href="/surveys/new" style={primaryLink}>

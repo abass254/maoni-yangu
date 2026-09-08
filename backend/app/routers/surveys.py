@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session, joinedload
 from ..auth import get_current_user
 from ..database import get_db
 from ..models import Answer, Question, Response as SurveyResponse, Survey, User
-from ..templates import create_kenya_elections_survey
+from ..templates import create_canada_refugee_visa_survey, create_kenya_elections_survey
 from ..schemas import (
     PublicSurveyOut,
     QuestionIn,
@@ -169,6 +169,27 @@ def create_kenya_elections_template(
     if existing:
         return _survey_out(_owned_survey(db, existing.id, user))
     survey = create_kenya_elections_survey(db, user)
+    db.commit()
+    return _survey_out(_owned_survey(db, survey.id, user))
+
+
+@router.post("/surveys/templates/canada-refugee-visa", response_model=SurveyOut)
+def create_canada_refugee_visa_template(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Add the Canada refugee visa intake draft for the current user."""
+    existing = (
+        db.query(Survey)
+        .filter(
+            Survey.owner_id == user.id,
+            Survey.title == "Codsiga Fiisaha Qaxootiga — Kanada",
+        )
+        .first()
+    )
+    if existing:
+        return _survey_out(_owned_survey(db, existing.id, user))
+    survey = create_canada_refugee_visa_survey(db, user)
     db.commit()
     return _survey_out(_owned_survey(db, survey.id, user))
 

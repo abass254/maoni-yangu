@@ -147,6 +147,12 @@ export const api = {
       { method: "POST" },
       token
     ),
+  createCanadaRefugeeVisaTemplate: (token: string) =>
+    request<Survey>(
+      "/api/surveys/templates/canada-refugee-visa",
+      { method: "POST" },
+      token
+    ),
   getSurvey: (token: string, id: number) =>
     request<Survey>(`/api/surveys/${id}`, {}, token),
   updateSurvey: (
