@@ -248,205 +248,259 @@ KENYA_ELECTIONS_QUESTIONS: list[dict] = [
 ]
 
 
-# Intake form for case workers helping applicants prepare a Canada refugee /
-# protected-person pathway. Not an official IRCC form and not legal advice.
-CANADA_REFUGEE_VISA_QUESTIONS: list[dict] = [
-    {
-        "prompt": "Magacaaga buuxa (sida uu ku qoran yahay dukumeentigaaga)",
-        "question_type": "text",
-        "options": [],
-        "required": True,
-    },
-    {
-        "prompt": "Taariikhda dhalashada (QQ/BB/SSSS)",
-        "question_type": "text",
-        "options": [],
-        "required": True,
-    },
-    {
-        "prompt": "Jinsiga",
-        "question_type": "multiple_choice",
-        "options": ["Lab", "Dhedig", "Waxaan doorbidayaa inaan sheegin"],
-        "required": True,
-    },
-    {
-        "prompt": "Waddanka aad ku dhalatay",
-        "question_type": "text",
-        "options": [],
-        "required": True,
-    },
-    {
-        "prompt": "Jinsiyadda(ha) aad haysato",
-        "question_type": "text",
-        "options": [],
-        "required": True,
-    },
-    {
-        "prompt": "Xaaladdaaga qoyska",
-        "question_type": "multiple_choice",
-        "options": [
-            "Celin",
-            "Guursaday / Guursatay",
-            "Wada noolaan (common-law)",
-            "Kala tagay",
-            "Carmaalka / Carmalka",
-            "Waxaan doorbidayaa inaan sheegin",
-        ],
-        "required": True,
-    },
-    {
-        "prompt": "Tirada xubnaha qoyska ee kula soconaya ama ku tiirsan",
-        "question_type": "multiple_choice",
-        "options": ["Keliya aniga", "1–2", "3–4", "5 ama ka badan"],
-        "required": True,
-    },
-    {
-        "prompt": "Magacyada iyo da'da xubnaha qoyska ee ku tiirsan (haddii ay jiraan)",
-        "question_type": "text",
-        "options": [],
-        "required": False,
-    },
-    {
-        "prompt": "Hadda meeshee ku nooshahay? (waddan + magaalada / xerada)",
-        "question_type": "text",
-        "options": [],
-        "required": True,
-    },
-    {
-        "prompt": "Xaaladdaada hadda ee degenaanshaha",
-        "question_type": "multiple_choice",
-        "options": [
-            "Xero qaxooti / UNHCR",
-            "Magaalo — sharciga deganaanshaha waan hayaa",
-            "Magaalo — sharciga deganaanshaha ma hayaa",
-            "Xabsiga socdaalka / haynta",
-            "Meel kale",
-        ],
-        "required": True,
-    },
-    {
-        "prompt": "Ma haysaa diiwaangelin UNHCR ama hay'ad qaxooti oo la mid ah?",
-        "question_type": "multiple_choice",
-        "options": ["Haa", "Maya", "Ma hubo", "Codsi ayaa socda"],
-        "required": True,
-    },
-    {
-        "prompt": "Lambarka diiwaangelinta UNHCR / case number (haddii aad haysato)",
-        "question_type": "text",
-        "options": [],
-        "required": False,
-    },
-    {
-        "prompt": "Maxaa ugu weyn ee kaa dhigay inaad raadsato ilaalin / qaxootinimo?",
-        "question_type": "multiple_choice",
-        "options": [
-            "Cadaadis siyaasadeed",
-            "Dagaal / colaad",
-            "Cabudhin diineed",
-            "Cadaadis jinsi / jinsiyeed",
-            "Cadaadis koox / qabiil",
-            "Cadaadis ku salaysan ra'yi",
-            "Khalad shaqsiyeed / khatar gaar ah",
-            "Wax kale",
-        ],
-        "required": True,
-    },
-    {
-        "prompt": "Si kooban u qor sababta aad uga baahan tahay ilaalin Kanada",
-        "question_type": "text",
-        "options": [],
-        "required": True,
-    },
-    {
-        "prompt": "Ma ku soo noqon kartaa waddankaaga ammaan?",
-        "question_type": "multiple_choice",
-        "options": ["Maya", "Haa", "Ma hubo"],
-        "required": True,
-    },
-    {
-        "prompt": "Haddii aysan suurtagal ahayn, maxaa khatar ah?",
-        "question_type": "text",
-        "options": [],
-        "required": False,
-    },
-    {
-        "prompt": "Ma haysaa baasaboor ama dukumeenti aqoonsi?",
-        "question_type": "multiple_choice",
-        "options": [
-            "Baasaboor shaqeynaya",
-            "Baasaboor dhacay",
-            "Kaadh aqoonsi / ID kale",
-            "Wax dukumeenti ah ma haysto",
-        ],
-        "required": True,
-    },
-    {
-        "prompt": "Ma hore u codsatay fiiso / ilaalin waddan kale?",
-        "question_type": "multiple_choice",
-        "options": ["Maya", "Haa — waa la aqbalay", "Haa — waa la diiday", "Haa — weli socota"],
-        "required": True,
-    },
-    {
-        "prompt": "Haddii haa, sheeg waddanka iyo natiijada",
-        "question_type": "text",
-        "options": [],
-        "required": False,
-    },
-    {
-        "prompt": "Nooca caawimada aad raadinayso",
-        "question_type": "multiple_choice",
-        "options": [
-            "Ilaalin qaxooti (refugee protection)",
-            "Is-dejin qoys / sponsor qoys",
-            "Is-dejin hay'ad / private sponsorship",
-            "Fiiso bini'aadantinimo / urgent protection",
-            "Ma hubo — waxaan rabaa hagid",
-        ],
-        "required": True,
-    },
-    {
-        "prompt": "Heerka degdegga / khatarta hadda",
-        "question_type": "rating",
-        "options": ["1", "2", "3", "4", "5"],
-        "required": True,
-    },
-    {
-        "prompt": "Telefoon ama WhatsApp aad kaga soo xiriiri karto",
-        "question_type": "text",
-        "options": [],
-        "required": True,
-    },
-    {
-        "prompt": "Iimayl (haddii aad haysato)",
-        "question_type": "text",
-        "options": [],
-        "required": False,
-    },
-    {
-        "prompt": "Luqadaha aad ku hadasho",
-        "question_type": "text",
-        "options": [],
-        "required": True,
-    },
-    {
-        "prompt": "Ma u baahan tahay turjubaan marka la kula hadlayo?",
-        "question_type": "multiple_choice",
-        "options": ["Haa", "Maya", "Mararka qaarkood"],
-        "required": True,
-    },
-    {
-        "prompt": "Wax kale oo muhiim ah oo aad rabto inaad la wadaagto kooxda kiiska",
-        "question_type": "text",
-        "options": [],
-        "required": False,
-    },
-]
+# Intake forms for case workers helping applicants prepare refugee /
+# humanitarian pathways. Not official government forms and not legal advice.
+
+
+def _refugee_visa_questions(
+    country: str,
+    *,
+    pathways: list[str],
+) -> list[dict]:
+    return [
+        {
+            "prompt": "Magacaaga buuxa (sida uu ku qoran yahay dukumeentigaaga)",
+            "question_type": "text",
+            "options": [],
+            "required": True,
+        },
+        {
+            "prompt": "Taariikhda dhalashada (QQ/BB/SSSS)",
+            "question_type": "text",
+            "options": [],
+            "required": True,
+        },
+        {
+            "prompt": "Jinsiga",
+            "question_type": "multiple_choice",
+            "options": ["Lab", "Dhedig", "Waxaan doorbidayaa inaan sheegin"],
+            "required": True,
+        },
+        {
+            "prompt": "Waddanka aad ku dhalatay",
+            "question_type": "text",
+            "options": [],
+            "required": True,
+        },
+        {
+            "prompt": "Jinsiyadda(ha) aad haysato",
+            "question_type": "text",
+            "options": [],
+            "required": True,
+        },
+        {
+            "prompt": "Xaaladdaaga qoyska",
+            "question_type": "multiple_choice",
+            "options": [
+                "Celin",
+                "Guursaday / Guursatay",
+                "Wada noolaan (common-law)",
+                "Kala tagay",
+                "Carmaalka / Carmalka",
+                "Waxaan doorbidayaa inaan sheegin",
+            ],
+            "required": True,
+        },
+        {
+            "prompt": "Tirada xubnaha qoyska ee kula soconaya ama ku tiirsan",
+            "question_type": "multiple_choice",
+            "options": ["Keliya aniga", "1–2", "3–4", "5 ama ka badan"],
+            "required": True,
+        },
+        {
+            "prompt": "Magacyada iyo da'da xubnaha qoyska ee ku tiirsan (haddii ay jiraan)",
+            "question_type": "text",
+            "options": [],
+            "required": False,
+        },
+        {
+            "prompt": "Hadda meeshee ku nooshahay? (waddan + magaalada / xerada)",
+            "question_type": "text",
+            "options": [],
+            "required": True,
+        },
+        {
+            "prompt": "Xaaladdaada hadda ee degenaanshaha",
+            "question_type": "multiple_choice",
+            "options": [
+                "Xero qaxooti / UNHCR",
+                "Magaalo — sharciga deganaanshaha waan hayaa",
+                "Magaalo — sharciga deganaanshaha ma hayaa",
+                "Xabsiga socdaalka / haynta",
+                "Meel kale",
+            ],
+            "required": True,
+        },
+        {
+            "prompt": "Ma haysaa diiwaangelin UNHCR ama hay'ad qaxooti oo la mid ah?",
+            "question_type": "multiple_choice",
+            "options": ["Haa", "Maya", "Ma hubo", "Codsi ayaa socda"],
+            "required": True,
+        },
+        {
+            "prompt": "Lambarka diiwaangelinta UNHCR / case number (haddii aad haysato)",
+            "question_type": "text",
+            "options": [],
+            "required": False,
+        },
+        {
+            "prompt": "Maxaa ugu weyn ee kaa dhigay inaad raadsato ilaalin / qaxootinimo?",
+            "question_type": "multiple_choice",
+            "options": [
+                "Cadaadis siyaasadeed",
+                "Dagaal / colaad",
+                "Cabudhin diineed",
+                "Cadaadis jinsi / jinsiyeed",
+                "Cadaadis koox / qabiil",
+                "Cadaadis ku salaysan ra'yi",
+                "Khalad shaqsiyeed / khatar gaar ah",
+                "Wax kale",
+            ],
+            "required": True,
+        },
+        {
+            "prompt": f"Si kooban u qor sababta aad uga baahan tahay ilaalin {country}",
+            "question_type": "text",
+            "options": [],
+            "required": True,
+        },
+        {
+            "prompt": "Ma ku soo noqon kartaa waddankaaga ammaan?",
+            "question_type": "multiple_choice",
+            "options": ["Maya", "Haa", "Ma hubo"],
+            "required": True,
+        },
+        {
+            "prompt": "Haddii aysan suurtagal ahayn, maxaa khatar ah?",
+            "question_type": "text",
+            "options": [],
+            "required": False,
+        },
+        {
+            "prompt": "Ma haysaa baasaboor ama dukumeenti aqoonsi?",
+            "question_type": "multiple_choice",
+            "options": [
+                "Baasaboor shaqeynaya",
+                "Baasaboor dhacay",
+                "Kaadh aqoonsi / ID kale",
+                "Wax dukumeenti ah ma haysto",
+            ],
+            "required": True,
+        },
+        {
+            "prompt": "Ma hore u codsatay fiiso / ilaalin waddan kale?",
+            "question_type": "multiple_choice",
+            "options": [
+                "Maya",
+                "Haa — waa la aqbalay",
+                "Haa — waa la diiday",
+                "Haa — weli socota",
+            ],
+            "required": True,
+        },
+        {
+            "prompt": "Haddii haa, sheeg waddanka iyo natiijada",
+            "question_type": "text",
+            "options": [],
+            "required": False,
+        },
+        {
+            "prompt": "Nooca caawimada aad raadinayso",
+            "question_type": "multiple_choice",
+            "options": pathways,
+            "required": True,
+        },
+        {
+            "prompt": "Heerka degdegga / khatarta hadda",
+            "question_type": "rating",
+            "options": ["1", "2", "3", "4", "5"],
+            "required": True,
+        },
+        {
+            "prompt": "Telefoon ama WhatsApp aad kaga soo xiriiri karto",
+            "question_type": "text",
+            "options": [],
+            "required": True,
+        },
+        {
+            "prompt": "Iimayl (haddii aad haysato)",
+            "question_type": "text",
+            "options": [],
+            "required": False,
+        },
+        {
+            "prompt": "Luqadaha aad ku hadasho",
+            "question_type": "text",
+            "options": [],
+            "required": True,
+        },
+        {
+            "prompt": "Ma u baahan tahay turjubaan marka la kula hadlayo?",
+            "question_type": "multiple_choice",
+            "options": ["Haa", "Maya", "Mararka qaarkood"],
+            "required": True,
+        },
+        {
+            "prompt": "Wax kale oo muhiim ah oo aad rabto inaad la wadaagto kooxda kiiska",
+            "question_type": "text",
+            "options": [],
+            "required": False,
+        },
+    ]
+
+
+CANADA_REFUGEE_VISA_QUESTIONS = _refugee_visa_questions(
+    "Kanada",
+    pathways=[
+        "Ilaalin qaxooti (refugee protection)",
+        "Is-dejin qoys / sponsor qoys",
+        "Is-dejin hay'ad / private sponsorship",
+        "Fiiso bini'aadantinimo / urgent protection",
+        "Ma hubo — waxaan rabaa hagid",
+    ],
+)
+
+GERMANY_REFUGEE_VISA_QUESTIONS = _refugee_visa_questions(
+    "Jarmalka",
+    pathways=[
+        "Asyl / ilaalin qaxooti (BAMF)",
+        "Is-dejin (resettlement)",
+        "Is-dejin qoys / family reunification",
+        "Fiiso bini'aadantinimo / urgent protection",
+        "Ma hubo — waxaan rabaa hagid",
+    ],
+)
+
+UK_REFUGEE_VISA_QUESTIONS = _refugee_visa_questions(
+    "Boqortooyada Midowday (UK)",
+    pathways=[
+        "Asylum / ilaalin qaxooti (Home Office)",
+        "UK Resettlement Scheme",
+        "Is-dejin qoys / family reunion",
+        "Fiiso bini'aadantinimo / urgent protection",
+        "Ma hubo — waxaan rabaa hagid",
+    ],
+)
+
+AUSTRALIA_REFUGEE_VISA_QUESTIONS = _refugee_visa_questions(
+    "Australia",
+    pathways=[
+        "Refugee / humanitarian visa (Home Affairs)",
+        "Is-dejin (resettlement)",
+        "Is-dejin qoys / family sponsorship",
+        "Fiiso bini'aadantinimo / urgent protection",
+        "Ma hubo — waxaan rabaa hagid",
+    ],
+)
 
 
 DEFAULT_TEMPLATE_TITLES = {
     "job-application": "Job Application",
     "kenya-elections": "Kenya Elections Opinion Survey",
     "canada-refugee-visa": "Codsiga Fiisaha Qaxootiga — Kanada",
+    "germany-refugee-visa": "Codsiga Fiisaha Qaxootiga — Jarmalka",
+    "uk-refugee-visa": "Codsiga Fiisaha Qaxootiga — UK",
+    "australia-refugee-visa": "Codsiga Fiisaha Qaxootiga — Australia",
 }
 
 
@@ -480,18 +534,70 @@ def create_kenya_elections_survey(db: Session, user: User) -> Survey:
     )
 
 
-def create_canada_refugee_visa_survey(db: Session, user: User) -> Survey:
+def _create_refugee_visa_survey(
+    db: Session,
+    user: User,
+    *,
+    title: str,
+    country: str,
+    agency: str,
+    questions: list[dict],
+) -> Survey:
     return _create_survey_from_questions(
         db,
         user,
-        title="Codsiga Fiisaha Qaxootiga — Kanada",
+        title=title,
         description=(
-            "Foomka horudhaca ee ururinta macluumaadka dadka raadsanaya ilaalin "
-            "qaxooti / fiiso bini'aadantinimo Kanada. Goobta waa in la daaraa ka hor "
-            "intaadan buuxin. Kani ma aha foomka rasmiga ah ee IRCC, mana aha talo sharci."
+            f"Foomka horudhaca ee ururinta macluumaadka dadka raadsanaya ilaalin "
+            f"qaxooti / fiiso bini'aadantinimo {country}. Goobta waa in la daaraa ka hor "
+            f"intaadan buuxin. Kani ma aha foomka rasmiga ah ee {agency}, mana aha talo sharci."
         ),
-        questions=CANADA_REFUGEE_VISA_QUESTIONS,
+        questions=questions,
         collect_location=True,
+    )
+
+
+def create_canada_refugee_visa_survey(db: Session, user: User) -> Survey:
+    return _create_refugee_visa_survey(
+        db,
+        user,
+        title=DEFAULT_TEMPLATE_TITLES["canada-refugee-visa"],
+        country="Kanada",
+        agency="IRCC",
+        questions=CANADA_REFUGEE_VISA_QUESTIONS,
+    )
+
+
+def create_germany_refugee_visa_survey(db: Session, user: User) -> Survey:
+    return _create_refugee_visa_survey(
+        db,
+        user,
+        title=DEFAULT_TEMPLATE_TITLES["germany-refugee-visa"],
+        country="Jarmalka",
+        agency="BAMF",
+        questions=GERMANY_REFUGEE_VISA_QUESTIONS,
+    )
+
+
+def create_uk_refugee_visa_survey(db: Session, user: User) -> Survey:
+    return _create_refugee_visa_survey(
+        db,
+        user,
+        title=DEFAULT_TEMPLATE_TITLES["uk-refugee-visa"],
+        country="Boqortooyada Midowday (UK)",
+        agency="UKVI / Home Office",
+        questions=UK_REFUGEE_VISA_QUESTIONS,
+    )
+
+
+def create_australia_refugee_visa_survey(db: Session, user: User) -> Survey:
+    return _create_refugee_visa_survey(
+        db,
+        user,
+        title=DEFAULT_TEMPLATE_TITLES["australia-refugee-visa"],
+        country="Australia",
+        agency="Home Affairs",
+        questions=AUSTRALIA_REFUGEE_VISA_QUESTIONS,
     )
 
 
@@ -500,4 +606,7 @@ def create_default_surveys_for_user(db: Session, user: User) -> list[Survey]:
         create_default_job_application_survey(db, user),
         create_kenya_elections_survey(db, user),
         create_canada_refugee_visa_survey(db, user),
+        create_germany_refugee_visa_survey(db, user),
+        create_uk_refugee_visa_survey(db, user),
+        create_australia_refugee_visa_survey(db, user),
     ]

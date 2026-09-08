@@ -12,7 +12,14 @@ from sqlalchemy.orm import Session, joinedload
 from ..auth import get_current_user
 from ..database import get_db
 from ..models import Answer, Question, Response as SurveyResponse, Survey, User
-from ..templates import create_canada_refugee_visa_survey, create_kenya_elections_survey
+from ..templates import (
+    DEFAULT_TEMPLATE_TITLES,
+    create_australia_refugee_visa_survey,
+    create_canada_refugee_visa_survey,
+    create_germany_refugee_visa_survey,
+    create_kenya_elections_survey,
+    create_uk_refugee_visa_survey,
+)
 from ..schemas import (
     PublicSurveyOut,
     QuestionIn,
@@ -173,25 +180,75 @@ def create_kenya_elections_template(
     return _survey_out(_owned_survey(db, survey.id, user))
 
 
+def _get_or_create_named_template(
+    db: Session,
+    user: User,
+    *,
+    title: str,
+    factory,
+) -> SurveyOut:
+    existing = (
+        db.query(Survey)
+        .filter(Survey.owner_id == user.id, Survey.title == title)
+        .first()
+    )
+    if existing:
+        return _survey_out(_owned_survey(db, existing.id, user))
+    survey = factory(db, user)
+    db.commit()
+    return _survey_out(_owned_survey(db, survey.id, user))
+
+
 @router.post("/surveys/templates/canada-refugee-visa", response_model=SurveyOut)
 def create_canada_refugee_visa_template(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Add the Canada refugee visa intake draft for the current user."""
-    existing = (
-        db.query(Survey)
-        .filter(
-            Survey.owner_id == user.id,
-            Survey.title == "Codsiga Fiisaha Qaxootiga — Kanada",
-        )
-        .first()
+    return _get_or_create_named_template(
+        db,
+        user,
+        title=DEFAULT_TEMPLATE_TITLES["canada-refugee-visa"],
+        factory=create_canada_refugee_visa_survey,
     )
-    if existing:
-        return _survey_out(_owned_survey(db, existing.id, user))
-    survey = create_canada_refugee_visa_survey(db, user)
-    db.commit()
-    return _survey_out(_owned_survey(db, survey.id, user))
+
+
+@router.post("/surveys/templates/germany-refugee-visa", response_model=SurveyOut)
+def create_germany_refugee_visa_template(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return _get_or_create_named_template(
+        db,
+        user,
+        title=DEFAULT_TEMPLATE_TITLES["germany-refugee-visa"],
+        factory=create_germany_refugee_visa_survey,
+    )
+
+
+@router.post("/surveys/templates/uk-refugee-visa", response_model=SurveyOut)
+def create_uk_refugee_visa_template(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return _get_or_create_named_template(
+        db,
+        user,
+        title=DEFAULT_TEMPLATE_TITLES["uk-refugee-visa"],
+        factory=create_uk_refugee_visa_survey,
+    )
+
+
+@router.post("/surveys/templates/australia-refugee-visa", response_model=SurveyOut)
+def create_australia_refugee_visa_template(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return _get_or_create_named_template(
+        db,
+        user,
+        title=DEFAULT_TEMPLATE_TITLES["australia-refugee-visa"],
+        factory=create_australia_refugee_visa_survey,
+    )
 
 
 @router.get("/surveys/{survey_id}", response_model=SurveyOut)

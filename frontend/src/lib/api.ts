@@ -153,6 +153,24 @@ export const api = {
       { method: "POST" },
       token
     ),
+  createGermanyRefugeeVisaTemplate: (token: string) =>
+    request<Survey>(
+      "/api/surveys/templates/germany-refugee-visa",
+      { method: "POST" },
+      token
+    ),
+  createUkRefugeeVisaTemplate: (token: string) =>
+    request<Survey>(
+      "/api/surveys/templates/uk-refugee-visa",
+      { method: "POST" },
+      token
+    ),
+  createAustraliaRefugeeVisaTemplate: (token: string) =>
+    request<Survey>(
+      "/api/surveys/templates/australia-refugee-visa",
+      { method: "POST" },
+      token
+    ),
   getSurvey: (token: string, id: number) =>
     request<Survey>(`/api/surveys/${id}`, {}, token),
   updateSurvey: (

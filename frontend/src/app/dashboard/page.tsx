@@ -3,16 +3,44 @@
 import Link from "next/link";
 import { useEffect, useState, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
-import { api, type SurveyListItem, type SurveyStatus } from "@/lib/api";
+import { api, type Survey, type SurveyListItem, type SurveyStatus } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
 const DEFAULT_TEMPLATE_TITLES = new Set([
   "Job Application",
   "Kenya Elections Opinion Survey",
   "Codsiga Fiisaha Qaxootiga — Kanada",
+  "Codsiga Fiisaha Qaxootiga — Jarmalka",
+  "Codsiga Fiisaha Qaxootiga — UK",
+  "Codsiga Fiisaha Qaxootiga — Australia",
 ]);
 
-const CANADA_REFUGEE_TITLE = "Codsiga Fiisaha Qaxootiga — Kanada";
+const REFUGEE_TEMPLATES: {
+  title: string;
+  label: string;
+  create: (token: string) => Promise<Survey>;
+}[] = [
+  {
+    title: "Codsiga Fiisaha Qaxootiga — Kanada",
+    label: "Kanada",
+    create: (token) => api.createCanadaRefugeeVisaTemplate(token),
+  },
+  {
+    title: "Codsiga Fiisaha Qaxootiga — Jarmalka",
+    label: "Jarmalka",
+    create: (token) => api.createGermanyRefugeeVisaTemplate(token),
+  },
+  {
+    title: "Codsiga Fiisaha Qaxootiga — UK",
+    label: "UK",
+    create: (token) => api.createUkRefugeeVisaTemplate(token),
+  },
+  {
+    title: "Codsiga Fiisaha Qaxootiga — Australia",
+    label: "Australia",
+    create: (token) => api.createAustraliaRefugeeVisaTemplate(token),
+  },
+];
 
 function statusLabel(status: SurveyStatus) {
   return status === "published" ? "la daabacay" : "qabyo";
@@ -25,7 +53,7 @@ export default function DashboardPage() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(true);
   const [addingElections, setAddingElections] = useState(false);
-  const [addingRefugee, setAddingRefugee] = useState(false);
+  const [addingRefugeeKey, setAddingRefugeeKey] = useState<string | null>(null);
 
   useEffect(() => {
     if (loading) return;
@@ -45,20 +73,8 @@ export default function DashboardPage() {
   const hasElectionsTemplate = surveys.some(
     (s) => s.title === "Kenya Elections Opinion Survey"
   );
-  const hasRefugeeTemplate = surveys.some((s) => s.title === CANADA_REFUGEE_TITLE);
 
-  function prependSurvey(survey: {
-    id: number;
-    public_id: string;
-    title: string;
-    description: string;
-    status: SurveyStatus;
-    collect_location: boolean;
-    created_at: string;
-    updated_at: string;
-    questions: { length: number };
-    response_count: number;
-  }) {
+  function prependSurvey(survey: Survey) {
     setSurveys((prev) => {
       if (prev.some((s) => s.id === survey.id)) return prev;
       return [
@@ -96,12 +112,12 @@ export default function DashboardPage() {
     }
   }
 
-  async function addRefugeeTemplate() {
+  async function addRefugeeTemplate(title: string, create: (token: string) => Promise<Survey>) {
     if (!token) return;
-    setAddingRefugee(true);
+    setAddingRefugeeKey(title);
     setError("");
     try {
-      const survey = await api.createCanadaRefugeeVisaTemplate(token);
+      const survey = await create(token);
       prependSurvey(survey);
       router.push(`/surveys/${survey.id}/edit`);
     } catch (err) {
@@ -111,13 +127,17 @@ export default function DashboardPage() {
           : "Waa lagu fashilmay ku darista qaabka fiisaha qaxootiga"
       );
     } finally {
-      setAddingRefugee(false);
+      setAddingRefugeeKey(null);
     }
   }
 
   if (loading || busy) {
     return <p style={{ color: "var(--muted)" }}>Sahannada waa la soo rarayaa…</p>;
   }
+
+  const missingRefugee = REFUGEE_TEMPLATES.filter(
+    (t) => !surveys.some((s) => s.title === t.title)
+  );
 
   return (
     <div style={{ display: "grid", gap: "1.25rem" }}>
@@ -128,7 +148,7 @@ export default function DashboardPage() {
           </h1>
           <p style={{ margin: "0.35rem 0 0", color: "var(--muted)" }}>
             Akoonnada cusub waxay helayaan qaababka shaqada, doorashada, iyo fiisaha
-            qaxootiga — wax ka beddel, daabac, oo wadaag.
+            qaxootiga (Kanada, Jarmalka, UK, Australia) — wax ka beddel, daabac, oo wadaag.
           </p>
         </div>
         <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignSelf: "start" }}>
@@ -142,16 +162,19 @@ export default function DashboardPage() {
               {addingElections ? "Waa lagu darayaa…" : "Ku dar qaabka Kenya Elections"}
             </button>
           )}
-          {!hasRefugeeTemplate && (
+          {missingRefugee.map((t) => (
             <button
+              key={t.title}
               type="button"
-              onClick={() => void addRefugeeTemplate()}
-              disabled={addingRefugee}
+              onClick={() => void addRefugeeTemplate(t.title, t.create)}
+              disabled={addingRefugeeKey === t.title}
               style={secondaryBtn}
             >
-              {addingRefugee ? "Waa lagu darayaa…" : "Ku dar fiisaha qaxootiga (Kanada)"}
+              {addingRefugeeKey === t.title
+                ? "Waa lagu darayaa…"
+                : `Ku dar fiisaha qaxootiga (${t.label})`}
             </button>
-          )}
+          ))}
           <Link href="/surveys/new" style={primaryLink}>
             Sahan cusub
           </Link>
