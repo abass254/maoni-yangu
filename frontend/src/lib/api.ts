@@ -9,6 +9,7 @@ export type User = {
   id: number;
   email: string;
   name: string;
+  is_superadmin?: boolean;
 };
 
 export type Question = {
@@ -46,6 +47,9 @@ export type SurveyListItem = {
   updated_at: string;
   question_count: number;
   response_count: number;
+  owner_id?: number | null;
+  owner_name?: string | null;
+  owner_email?: string | null;
 };
 
 export type PublicSurvey = {

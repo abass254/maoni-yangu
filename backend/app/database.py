@@ -67,6 +67,22 @@ def ensure_schema() -> None:
                 conn.execute(
                     text("UPDATE surveys SET language = 'en' WHERE language IS NULL")
                 )
+        if "users" in tables:
+            user_cols = {
+                row[1]
+                for row in conn.execute(text("PRAGMA table_info(users)")).fetchall()
+            }
+            if "is_superadmin" not in user_cols:
+                conn.execute(
+                    text(
+                        "ALTER TABLE users ADD COLUMN is_superadmin BOOLEAN DEFAULT 0"
+                    )
+                )
+                conn.execute(
+                    text(
+                        "UPDATE users SET is_superadmin = 0 WHERE is_superadmin IS NULL"
+                    )
+                )
 
 
 def get_db():

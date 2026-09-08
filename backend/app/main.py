@@ -5,9 +5,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .database import Base, engine, ensure_schema
 from .routers import auth, surveys
+from .seed import ensure_superadmin
 
 Base.metadata.create_all(bind=engine)
 ensure_schema()
+ensure_superadmin()
 
 app = FastAPI(title="Maoni Yangu API", version="1.0.0")
 

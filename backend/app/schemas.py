@@ -18,14 +18,16 @@ class RegisterRequest(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    # Email for normal users, or username (e.g. netizen) for superadmin
+    email: str = Field(min_length=1, max_length=255)
     password: str
 
 
 class UserOut(BaseModel):
     id: int
-    email: EmailStr
+    email: str
     name: str
+    is_superadmin: bool = False
 
     model_config = {"from_attributes": True}
 
@@ -100,6 +102,9 @@ class SurveyListItem(BaseModel):
     updated_at: datetime
     question_count: int
     response_count: int
+    owner_id: int | None = None
+    owner_name: str | None = None
+    owner_email: str | None = None
 
 
 class PublicSurveyOut(BaseModel):

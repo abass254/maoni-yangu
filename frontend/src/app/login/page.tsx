@@ -31,13 +31,15 @@ export default function LoginPage() {
   return (
     <AuthCard title="Welcome back" subtitle="Log in to manage your surveys.">
       <form onSubmit={onSubmit} style={{ display: "grid", gap: "0.9rem" }}>
-        <Field label="Email">
+        <Field label="Email or username">
           <input
-            type="email"
+            type="text"
+            autoComplete="username"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             style={inputStyle}
+            placeholder="you@example.com or netizen"
           />
         </Field>
         <Field label="Password">

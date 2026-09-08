@@ -114,12 +114,18 @@ def _replace_questions(db: Session, survey: Survey, questions: list[QuestionIn])
 
 
 def _owned_survey(db: Session, survey_id: int, user: User) -> Survey:
-    survey = (
+    query = (
         db.query(Survey)
-        .options(joinedload(Survey.questions), joinedload(Survey.responses))
-        .filter(Survey.id == survey_id, Survey.owner_id == user.id)
-        .first()
+        .options(
+            joinedload(Survey.questions),
+            joinedload(Survey.responses),
+            joinedload(Survey.owner),
+        )
+        .filter(Survey.id == survey_id)
     )
+    if not user.is_superadmin:
+        query = query.filter(Survey.owner_id == user.id)
+    survey = query.first()
     if not survey:
         raise HTTPException(status_code=404, detail="Survey not found")
     return survey
@@ -127,13 +133,18 @@ def _owned_survey(db: Session, survey_id: int, user: User) -> Survey:
 
 @router.get("/surveys", response_model=list[SurveyListItem])
 def list_surveys(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    surveys = (
+    query = (
         db.query(Survey)
-        .options(joinedload(Survey.questions), joinedload(Survey.responses))
-        .filter(Survey.owner_id == user.id)
+        .options(
+            joinedload(Survey.questions),
+            joinedload(Survey.responses),
+            joinedload(Survey.owner),
+        )
         .order_by(Survey.updated_at.desc())
-        .all()
     )
+    if not user.is_superadmin:
+        query = query.filter(Survey.owner_id == user.id)
+    surveys = query.all()
     return [
         SurveyListItem(
             id=s.id,
@@ -147,6 +158,9 @@ def list_surveys(user: User = Depends(get_current_user), db: Session = Depends(g
             updated_at=s.updated_at,
             question_count=len(s.questions),
             response_count=_complete_response_count(s),
+            owner_id=s.owner_id,
+            owner_name=s.owner.name if s.owner else None,
+            owner_email=s.owner.email if s.owner else None,
         )
         for s in surveys
     ]

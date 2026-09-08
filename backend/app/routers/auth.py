@@ -7,6 +7,7 @@ from ..auth import create_access_token, get_current_user, hash_password, verify_
 from ..database import get_db
 from ..models import User
 from ..schemas import LoginRequest, RegisterRequest, TokenOut, UserOut
+from ..seed import SUPERADMIN_USERNAME
 from ..templates import create_default_surveys_for_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -14,13 +15,17 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/register", response_model=TokenOut)
 def register(body: RegisterRequest, db: Session = Depends(get_db)):
-    existing = db.query(User).filter(User.email == body.email.lower()).first()
+    email = body.email.lower().strip()
+    if email == SUPERADMIN_USERNAME:
+        raise HTTPException(status_code=400, detail="This username is reserved")
+    existing = db.query(User).filter(User.email == email).first()
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
     user = User(
-        email=body.email.lower(),
+        email=email,
         password_hash=hash_password(body.password),
         name=body.name.strip(),
+        is_superadmin=False,
     )
     db.add(user)
     db.flush()
@@ -35,7 +40,13 @@ def register(body: RegisterRequest, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=TokenOut)
 def login(body: LoginRequest, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == body.email.lower()).first()
+    identifier = body.email.strip()
+    # Superadmin username is case-insensitive; emails stay lowercased.
+    if identifier.lower() == SUPERADMIN_USERNAME:
+        lookup = SUPERADMIN_USERNAME
+    else:
+        lookup = identifier.lower()
+    user = db.query(User).filter(User.email == lookup).first()
     if not user or not verify_password(body.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

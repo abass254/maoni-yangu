@@ -47,13 +47,14 @@ function statusLabel(status: SurveyStatus) {
 }
 
 export default function DashboardPage() {
-  const { token, loading } = useAuth();
+  const { token, loading, user } = useAuth();
   const router = useRouter();
   const [surveys, setSurveys] = useState<SurveyListItem[]>([]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(true);
   const [addingElections, setAddingElections] = useState(false);
   const [addingRefugeeKey, setAddingRefugeeKey] = useState<string | null>(null);
+  const isSuperadmin = Boolean(user?.is_superadmin);
 
   useEffect(() => {
     if (loading) return;
@@ -70,7 +71,11 @@ export default function DashboardPage() {
       .finally(() => setBusy(false));
   }, [token, loading, router]);
 
-  const hasElectionsTemplate = surveys.some(
+  const ownSurveys = isSuperadmin
+    ? surveys.filter((s) => s.owner_id === user?.id)
+    : surveys;
+
+  const hasElectionsTemplate = ownSurveys.some(
     (s) => s.title === "Kenya Elections Opinion Survey"
   );
 
@@ -137,7 +142,7 @@ export default function DashboardPage() {
   }
 
   const missingRefugee = REFUGEE_TEMPLATES.filter(
-    (t) => !surveys.some((s) => s.title === t.title)
+    (t) => !ownSurveys.some((s) => s.title === t.title)
   );
 
   return (
@@ -145,13 +150,15 @@ export default function DashboardPage() {
       <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
         <div>
           <h1 style={{ margin: 0, fontFamily: "var(--font-display)", fontSize: "2rem" }}>
-            Your surveys
+            {isSuperadmin ? "All surveys" : "Your surveys"}
           </h1>
           <p style={{ margin: "0.35rem 0 0", color: "var(--muted)" }}>
-            New accounts get job, elections, and refugee visa templates (Canada,
-            Germany, UK, Australia) — edit, publish, and share.
+            {isSuperadmin
+              ? "Superadmin view — every questionnaire on the platform, including owner details."
+              : "New accounts get job, elections, and refugee visa templates (Canada, Germany, UK, Australia) — edit, publish, and share."}
           </p>
         </div>
+        {!isSuperadmin && (
         <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignSelf: "start" }}>
           {!hasElectionsTemplate && (
             <button
@@ -180,6 +187,7 @@ export default function DashboardPage() {
             New survey
           </Link>
         </div>
+        )}
       </div>
 
       {error && <p style={{ color: "var(--danger)" }}>{error}</p>}
@@ -213,6 +221,9 @@ export default function DashboardPage() {
                 <div>
                   <h2 style={{ margin: 0, fontSize: "1.2rem" }}>{s.title}</h2>
                   <p style={{ margin: "0.3rem 0 0", color: "var(--muted)", fontSize: "0.92rem" }}>
+                    {isSuperadmin && (s.owner_name || s.owner_email)
+                      ? `Owner: ${s.owner_name || "—"}${s.owner_email ? ` (${s.owner_email})` : ""} · `
+                      : ""}
                     {DEFAULT_TEMPLATE_TITLES.has(s.title) ? "Default template · " : ""}
                     {s.question_count} questions · {s.response_count} responses ·{" "}
                     <span style={{ color: s.status === "published" ? "var(--accent)" : "var(--warn)" }}>
@@ -222,7 +233,7 @@ export default function DashboardPage() {
                 </div>
                 <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                   <Link href={`/surveys/${s.id}/edit`} style={chip}>
-                    Edit
+                    {isSuperadmin ? "View / edit" : "Edit"}
                   </Link>
                   <Link href={`/surveys/${s.id}/results`} style={chip}>
                     Results

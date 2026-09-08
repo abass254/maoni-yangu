@@ -51,7 +51,10 @@ export function AppHeader() {
             <Link href="/surveys/new" className="nav-link">
               New survey
             </Link>
-            <span style={{ color: "var(--muted)", fontSize: "0.9rem" }}>{user.name}</span>
+            <span style={{ color: "var(--muted)", fontSize: "0.9rem" }}>
+              {user.name}
+              {user.is_superadmin ? " · Superadmin" : ""}
+            </span>
             <button
               type="button"
               onClick={logout}
